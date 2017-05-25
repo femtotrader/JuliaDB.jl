@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Overview",
     "category": "section",
-    "text": "JuliaDB is a package for working with large persistent data sets.We recognized the need for an all-Julia, end-to-end tool that canLoad multi-dimensional datasets quickly and incrementally.\nIndex the data and perform filter, aggregate, sort and join operations.\nSave results and load them efficiently later.\nReadily use Julia's built-in parallelism to fully utilize any machine or cluster.We built JuliaDB to fill this void.JuliaDB is Julia all the way down. This means queries can be composed with Julia code that may use a vast ecosystem of packages.JuliaDB is based on Dagger and IndexedTables. It provides a distributed-array-like data model where the indexed data comprises the dimensions of the array. Over time, we hope to extend the data model to allow represent dense arrays and other Julia array types like AxisArrays. On top of this distributed-array-like model, JuliaDB also provides all the familiar relational database operations that are optimized to use the index."
+    "text": "JuliaDB is a package for working with large persistent data sets.We recognized the need for an all-Julia, end-to-end tool that canLoad multi-dimensional datasets quickly and incrementally.\nIndex the data and perform filter, aggregate, sort and join operations.\nSave results and load them efficiently later.\nReadily use Julia's built-in parallelism to fully utilize any machine or cluster.We built JuliaDB to fill this void.JuliaDB is Julia all the way down. This means queries can be composed with Julia code that may use a vast ecosystem of packages.JuliaDB is based on Dagger and IndexedTables. It provides a distributed-array-like data model where the sorted index data comprises the dimensions of the array. Over time, we hope to extend the data model to represent dense arrays and other Julia array types like AxisArrays. On top of this distributed-array-like model, JuliaDB also provides all the familiar relational database operations that are optimized to use the index."
 },
 
 {
@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Getting started",
     "category": "section",
-    "text": "JuliaDB works on Julia 0.6 or higher. To install it, run:Pkg.clone(\"https://github.com/JuliaComputing/JuliaDB.jl.git\")To use JuliaDB, you may start Julia with a few worker processes (julia -p N) or, alternatively, run addprocs(N) before runningusing JuliaDBMultiple processes may not be benificial for datasets with less than a few tens of millions of rows. Communication costs are eliminated on a single process, but of course you will be using a single CPU."
+    "text": "JuliaDB works on Julia 0.6 or higher. To install it, run:Pkg.clone(\"https://github.com/JuliaComputing/JuliaDB.jl.git\")To use JuliaDB, you may start Julia with a few worker processes (julia -p N) or, alternatively, run addprocs(N) before runningusing JuliaDBMultiple processes may not be benificial for datasets with less than a few million rows. Communication costs are eliminated on a single process, but of course you will be using a single CPU."
 },
 
 {
