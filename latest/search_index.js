@@ -237,23 +237,23 @@ var documenterSearchIndex = {"docs": [
     "page": "API Reference",
     "title": "Dagger.compute",
     "category": "Method",
-    "text": "compute(t::DTable; allowoverlap, closed)\n\nComputes any delayed-evaluations in the DTable. The computed data is left on the worker processes. Subsequent operations on the results will reuse the chunks.\n\nIf allowoverlap is false then the computed data is re-sorted if required to have no chunks with overlapping index ranges if necessary.\n\nIf closed is true then the computed data is re-sorted if required to have no chunks with overlapping OR continuous boundaries.\n\nSee also gather.\n\nwarning: Warning\ncompute(t) requires at least as much memory as the size of the result of the computing t. You usually don't need to do this for the whole dataset. If the result is expected to be big, try compute(save(t, \"output_dir\")) instead. See save for more.\n\n\n\n"
+    "text": "compute(t::DTable; allowoverlap, closed)\n\nComputes any delayed-evaluations in the DTable. The computed data is left on the worker processes. Subsequent operations on the results will reuse the chunks.\n\nIf allowoverlap is false then the computed data is re-sorted if required to have no chunks with overlapping index ranges if necessary.\n\nIf closed is true then the computed data is re-sorted if required to have no chunks with overlapping OR continuous boundaries.\n\nSee also collect.\n\nwarning: Warning\ncompute(t) requires at least as much memory as the size of the result of the computing t. You usually don't need to do this for the whole dataset. If the result is expected to be big, try compute(save(t, \"output_dir\")) instead. See save for more.\n\n\n\n"
 },
 
 {
-    "location": "apireference.html#Dagger.gather-Tuple{JuliaDB.DTable}",
+    "location": "apireference.html#Base.collect-Tuple{JuliaDB.DTable}",
     "page": "API Reference",
-    "title": "Dagger.gather",
+    "title": "Base.collect",
     "category": "Method",
-    "text": "gather(t::DTable)\n\nGets distributed data in a DTable t and merges it into IndexedTable object\n\nwarning: Warning\ngather(t) requires at least as much memory as the size of the result of the computing t. If the result is expected to be big, try compute(save(t, \"output_dir\")) instead. See save for more. This data can be loaded later using load.\n\n\n\n"
+    "text": "collect(t::DTable)\n\nGets distributed data in a DTable t and merges it into IndexedTable object\n\nwarning: Warning\ncollect(t) requires at least as much memory as the size of the result of the computing t. If the result is expected to be big, try compute(save(t, \"output_dir\")) instead. See save for more. This data can be loaded later using load.\n\n\n\n"
 },
 
 {
-    "location": "apireference.html#Compute-and-gather-1",
+    "location": "apireference.html#Compute-and-collect-1",
     "page": "API Reference",
-    "title": "Compute and gather",
+    "title": "Compute and collect",
     "category": "section",
-    "text": "Operations in JuliaDB are out-of-core in nature. They return DTable objects which can contain parts that are not yet evaluated. compute and gather are ways to force evaluation.compute(t::DTable)gather(t::DTable)"
+    "text": "Operations in JuliaDB are out-of-core in nature. They return DTable objects which can contain parts that are not yet evaluated. compute and collect are ways to force evaluation.compute(t::DTable)collect(t::DTable)"
 },
 
 {
