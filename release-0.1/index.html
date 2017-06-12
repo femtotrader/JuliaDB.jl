@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Manual · JuliaDB</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/highlightjs/default.css" rel="stylesheet" type="text/css"/><link href="assets/documenter.css" rel="stylesheet" type="text/css"/><link href="assets/custom.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>JuliaDB</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href="index.html">Manual</a><ul class="internal"><li><a class="toctext" href="#Overview-1">Overview</a></li><li><a class="toctext" href="#Getting-started-1">Getting started</a></li><li><a class="toctext" href="#Loading-and-saving-data-1">Loading and saving data</a></li><li><a class="toctext" href="#Filtering-1">Filtering</a></li><li><a class="toctext" href="#Map-and-Reduce-1">Map and Reduce</a></li><li><a class="toctext" href="#Aggregation-1">Aggregation</a></li><li><a class="toctext" href="#Permuting-dimensions-1">Permuting dimensions</a></li><li><a class="toctext" href="#Joins-1">Joins</a></li></ul></li><li><a class="toctext" href="apireference.html">API Reference</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="index.html">Manual</a></li></ul><a class="edit-page" href="https://github.com/JuliaComputing/JuliaDB.jl/tree/69d9d0e5ccbbca8dedfab3bce18a24b0a861f41b/docs/src/index.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Manual</span><a class="fa fa-bars" href="#"></a></div></header><h2><a class="nav-anchor" id="Overview-1" href="#Overview-1">Overview</a></h2><p><em>JuliaDB is a package for working with persistent data sets.</em></p><p>We recognized the need for an all-Julia, end-to-end tool that can</p><ol><li><p>Load multi-dimensional datasets quickly and incrementally.</p></li><li><p>Index the data and perform filter, aggregate, sort and join operations.</p></li><li><p>Save results and load them efficiently later.</p></li><li><p>Readily use Julia&#39;s built-in <a href="https://docs.julialang.org/en/stable/manual/parallel-computing/">parallelism</a> to fully utilize any machine or cluster.</p></li></ol><p>We built JuliaDB to fill this void.</p><p>JuliaDB is Julia all the way down. This means queries can be composed with Julia code that may use a vast ecosystem of packages.</p><p>JuliaDB provides a distributed-array-like data model where the sorted index data comprises the dimensions of the array. It is based on <a href="https://github.com/JuliaParallel/Dagger.jl">Dagger</a> and <a href="https://github.com/JuliaComputing/IndexedTables.jl">IndexedTables</a>.  Over time, we hope to extend the data model to represent dense arrays and other Julia array types like <a href="https://github.com/JuliaArrays/AxisArrays.jl"><code>AxisArrays</code></a>. On top of this distributed-array-like model, JuliaDB also provides all the familiar relational database operations that are optimized to use the index.</p><h2><a class="nav-anchor" id="Getting-started-1" href="#Getting-started-1">Getting started</a></h2><p>JuliaDB works on Julia 0.6 or higher. To install it, run:</p><pre><code class="language-julia">Pkg.clone(&quot;https://github.com/JuliaComputing/JuliaDB.jl.git&quot;)</code></pre><p>To use JuliaDB, you may start Julia with a few worker processes (<code>julia -p N</code>) or, alternatively, run <code>addprocs(N)</code> before running</p><pre><code class="language-julia-repl">julia&gt; using JuliaDB</code></pre><p>Multiple processes may not be benificial for datasets with less than a few million rows. Communication costs are eliminated on a single process, but of course you will be using a single CPU.</p><h2><a class="nav-anchor" id="Loading-and-saving-data-1" href="#Loading-and-saving-data-1">Loading and saving data</a></h2><h3><a class="nav-anchor" id="Loading-CSV-files-1" href="#Loading-CSV-files-1">Loading CSV files</a></h3><p>Given a set of CSV files, JuliaDB builds and saves an index that allows the data to be accessed efficiently in the future. The &quot;ingest&quot; operation converts data to an efficient memory-mappable binary format.</p><p>Let&#39;s load some data from JuliaDB&#39;s test directory. The sample data contains monthly aggregates of stock prices (open, high, low, close values) as well as volume traded for 4 stocks (GOOGL, GS, KO, XRX) in the years 2010 through 2015. Each file contains a single year&#39;s data.</p><pre><code class="language-julia-repl">julia&gt; path = Pkg.dir(&quot;JuliaDB&quot;, &quot;test&quot;, &quot;sample&quot;)
+&quot;/home/travis/.julia/v0.6/JuliaDB/test/sample&quot;
+
+julia&gt; sampledata = loadfiles(path, indexcols=[&quot;date&quot;, &quot;ticker&quot;])
+Metadata for 6 / 6 files can be loaded from cache.
+DTable with 288 rows in 6 chunks:
+
+date        ticker  │ open     high     low     close   volume
+────────────────────┼────────────────────────────────────────────
+2010-01-01  &quot;GOOGL&quot; │ 626.95   629.51   540.99  626.75  1.78022e8
+2010-01-01  &quot;GS&quot;    │ 170.05   178.75   154.88  173.08  2.81862e8
+2010-01-01  &quot;KO&quot;    │ 57.16    57.4301  54.94   57.04   1.92693e8
+2010-01-01  &quot;XRX&quot;   │ 8.54     9.48     8.91    8.63    3.00838e8
+2010-02-01  &quot;GOOGL&quot; │ 534.602  547.5    531.75  533.02  1.03964e8
+...</code></pre><p><code>loadfiles</code> loads all files under a given directory. If you started julia with many processes, <code>loadfiles</code> will enlist the available workers to read the files in parallel. If you wanted to specify a subset of files to load or files in different directories, you can pass the file names as a vector in place of the directory path. JuliaDB exports the <code>glob</code> function from <a href="https://github.com/vtjnash/Glob.jl">Glob.jl</a> to help you with this.</p><p>Using the <code>indexcols</code> option, here we specified that <code>loadfiles</code> should use <code>date</code> and <code>ticker</code> columns as the index for the data. If <code>indexcols</code> is omitted, then an implicit index of integers ranging from 1 to length of the dataset is created. See <a href="apireference.html#JuliaDB.loadfiles">the API reference for <code>loadfiles</code></a> for all available options.</p><p>Notice that the output says <code>DTable with 288 rows in 6 chunks</code>. <code>loadfiles</code> creates a distributed table (<code>DTable</code>) with as many chunks as the input files. The loaded chunks are distributed across available worker processes. Below this line are the first 5 rows of the table giving a peek of what&#39;s in it, the data is sorted by the index columns which are to the left of the vertical line cutting through the table.</p><p><code>loadfiles</code> will also save metadata about the contents of the files in a directory named <code>.juliadb</code> in the directory with the files (or in the current working directory if a vector of filenames is passed). This means, the next time the files are loaded, it will not need to actually parse them to know what&#39;s in them. However a file will be parsed once an operation requires the data in it.</p><p>Another way to load data into JuliaDB is using <a href="apireference.html#JuliaDB.ingest"><code>ingest</code></a>. <code>ingest</code> reads and saves the data in an efficient memory-mappable binary storage format for fast reloading. You can also add new files to an existing dataset using <a href="apireference.html#JuliaDB.ingest!"><code>ingest!</code></a>.</p><h3><a class="nav-anchor" id="Saving-and-loading-JuliaDB-tables-1" href="#Saving-and-loading-JuliaDB-tables-1">Saving and loading JuliaDB tables</a></h3><p>You can save a <code>DTable</code> to disk at any point:</p><pre><code class="language-none">save(t, &quot;&lt;outputdir&gt;&quot;)</code></pre><p>This will create <code>&lt;outputdir&gt;</code> and save the individual chunks of the data in its own file.</p><p>A saved dataset can be loaded with <code>load</code>:</p><pre><code class="language-none">data = load(&quot;&lt;outpudir&gt;&quot;)</code></pre><h2><a class="nav-anchor" id="Filtering-1" href="#Filtering-1">Filtering</a></h2><h3><a class="nav-anchor" id="Indexing-1" href="#Indexing-1">Indexing</a></h3><p>Most lookup and filtering operations on <code>DTable</code> can be done via indexing _into_ it. Our <code>sampledata</code> object behaves like a 2-d array, accepting two indices, each a value, a range or a vector of values from the corresponding index columns.</p><p>You can get a specific value by indexing it by the exact index:</p><pre><code class="language-julia-repl">julia&gt; sampledata[Date(&quot;2010-06-01&quot;), &quot;GOOGL&quot;] # Get GOOGL&#39;s data for June 2010
+(open = 480.43, high = 509.25, low = 457.83, close = 482.37, volume = 1.196056e8)</code></pre><p>Above, we are indexing the table with a specific index value (<code>2010-06-01</code>, <code>&quot;GOOGL&quot;</code>). Here our <code>DTable</code> behaved like a dictionary, giving the value stored at a given key. The result is a <a href="https://github.com/blackrock/NamedTuples.jl"><code>NamedTuple</code></a> object containing 5 fields which of the same names as the data columns.</p><div class="admonition info"><div class="admonition-title">Info</div><div class="admonition-text"><p>The result of indexing into a table can be</p><ul><li><p>a <a href="https://github.com/blackrock/NamedTuples.jl"><code>NamedTuple</code></a> - if the data columns are named</p></li><li><p>a <code>Tuple</code> - if there are multiple columns but the columns are not named</p></li><li><p>a scalar value - if there is only one column (a vector) for the data</p></li></ul></div></div><p>One can also get a subset of the <code>DTable</code> by indexing into it with a range or a sorted vector of index values:</p><pre><code class="language-julia-repl">julia&gt; sampledata[Date(&quot;2012-01&quot;):Dates.Month(1):Date(&quot;2014-12&quot;), [&quot;GOOGL&quot;, &quot;KO&quot;]]
+DTable with 3 chunks:
+
+date        ticker  │ open    high     low     close   volume
+────────────────────┼───────────────────────────────────────────
+2012-01-01  &quot;GOOGL&quot; │ 652.94  670.25   584.0   665.41  1.47137e8
+2012-01-01  &quot;KO&quot;    │ 70.15   70.71    67.98   70.14   1.50116e8
+2012-02-01  &quot;GOOGL&quot; │ 584.94  625.6    619.77  580.83  9.46335e7
+2012-02-01  &quot;KO&quot;    │ 67.88   69.98    69.5    67.85   1.43833e8
+2012-03-01  &quot;GOOGL&quot; │ 622.26  658.589  653.49  622.4   9.45647e7
+...</code></pre><p>Fetches all values in the data for the stock symbols GOOGL and KO in the years 2012 - 2014</p><pre><code class="language-julia-repl">julia&gt; sampledata[:, [&quot;GOOGL&quot;, &quot;KO&quot;]]
+DTable with 6 chunks:
+
+date        ticker  │ open     high     low     close   volume
+────────────────────┼────────────────────────────────────────────
+2010-01-01  &quot;GOOGL&quot; │ 626.95   629.51   540.99  626.75  1.78022e8
+2010-01-01  &quot;KO&quot;    │ 57.16    57.4301  54.94   57.04   1.92693e8
+2010-02-01  &quot;GOOGL&quot; │ 534.602  547.5    531.75  533.02  1.03964e8
+2010-02-01  &quot;KO&quot;    │ 54.51    55.92    53.09   54.38   2.28993e8
+2010-03-01  &quot;GOOGL&quot; │ 529.2    588.275  569.74  532.69  1.67381e8
+...</code></pre><p>Fetches all values in the data for the stock symbols GOOGL and KO.</p><p>Range indexing always returns a <code>DTable</code> so that you can apply any other JuliaDB operation on the result of indexing.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Minutiae: notice the range we have used in the last example: <code>Date(&quot;2012-01&quot;):Dates.Month(1):Date(&quot;2014-12&quot;)</code>. This says &quot;from 2012-01-01 to 2014-12-01 in steps of 1 month&quot;. Date/DateTime ranges in Julia need to be specified with an increment such as <code>Dates.Month(1)</code>. If your dataset contains timestamps in the millisecond resolution, for example, you&#39;d need to specify <code>Dates.Millisecond(1)</code> as the increment, and so on.</p></div></div><h3><a class="nav-anchor" id="select-1" href="#select-1"><code>select</code></a></h3><p>If you want to apply a custom predicate on index values to filter the data, you can do so with <code>select</code> by passing <code>column=&gt;predicate</code> pairs:</p><pre><code class="language-julia-repl">julia&gt; select(sampledata, :date=&gt;Dates.ismonday)
+DTable with 6 chunks:
+
+date        ticker  │ open     high     low     close   volume
+────────────────────┼────────────────────────────────────────────
+2010-02-01  &quot;GOOGL&quot; │ 534.602  547.5    531.75  533.02  1.03964e8
+2010-02-01  &quot;GS&quot;    │ 149.82   160.21   156.99  153.13  2.3197e8
+2010-02-01  &quot;KO&quot;    │ 54.51    55.92    53.09   54.38   2.28993e8
+2010-02-01  &quot;XRX&quot;   │ 8.75     9.4      9.31    8.97    3.10746e8
+2010-03-01  &quot;GOOGL&quot; │ 529.2    588.275  569.74  532.69  1.67381e8
+...</code></pre><p>Filters only data points where the first of the month falls on a monday!</p><p>You can also provide multiple predicates. Below we will get values only for months starting on a monday and for stock symbols starting with the letter &quot;G&quot;.</p><pre><code class="language-julia-repl">julia&gt; select(sampledata, 1=&gt;Dates.ismonday, 2=&gt;x-&gt;startswith(x, &quot;G&quot;))
+DTable with 6 chunks:
+
+date        ticker  │ open     high     low     close   volume
+────────────────────┼────────────────────────────────────────────
+2010-02-01  &quot;GOOGL&quot; │ 534.602  547.5    531.75  533.02  1.03964e8
+2010-02-01  &quot;GS&quot;    │ 149.82   160.21   156.99  153.13  2.3197e8
+2010-03-01  &quot;GOOGL&quot; │ 529.2    588.275  569.74  532.69  1.67381e8
+2010-03-01  &quot;GS&quot;    │ 156.51   178.73   171.66  156.54  2.40365e8
+2010-11-01  &quot;GOOGL&quot; │ 615.73   630.85   574.32  615.0   1.16766e8
+...</code></pre><p><code>select</code> is similar to a <code>where</code> clause in traditional SQL/relational databases.</p><h3><a class="nav-anchor" id="filter-1" href="#filter-1"><code>filter</code></a></h3><p><code>filter</code> lets you filter based on the data values as opposed to <code>select</code> which filters based on the index values.</p><p>Here we filter only stock data where either the <code>low</code> value is greater than 10.</p><pre><code class="language-julia-repl">julia&gt; filter(x-&gt;x.low &gt; 10.0, sampledata)
+DTable with 6 chunks:
+
+date        ticker  │ open     high     low     close   volume
+────────────────────┼────────────────────────────────────────────
+2010-01-01  &quot;GOOGL&quot; │ 626.95   629.51   540.99  626.75  1.78022e8
+2010-01-01  &quot;GS&quot;    │ 170.05   178.75   154.88  173.08  2.81862e8
+2010-01-01  &quot;KO&quot;    │ 57.16    57.4301  54.94   57.04   1.92693e8
+2010-02-01  &quot;GOOGL&quot; │ 534.602  547.5    531.75  533.02  1.03964e8
+2010-02-01  &quot;GS&quot;    │ 149.82   160.21   156.99  153.13  2.3197e8
+...</code></pre><p>Notice the use of <code>x.low</code> in the predicate. This is because <code>x</code> is a <a href="https://github.com/blackrock/NamedTuples.jl"><code>NamedTuple</code></a> having the same fields as the columns of the data. If the data columns are not labeled (say because <code>header_exists</code> was set to true in <code>loadfiles</code> and headers were not manually provided), then the <code>x</code> will be a tuple.</p><h2><a class="nav-anchor" id="Map-and-Reduce-1" href="#Map-and-Reduce-1">Map and Reduce</a></h2><p>Good ol&#39; <code>map</code> and <code>reduce</code> behave as you&#39;d expect them to. <code>map</code> applies a function to every data point in the table. The input to <code>map</code> and <code>reduce</code> is of the same type as the output of scalar indexing on the table – it&#39;s either a <code>NamedTuple</code>, a <code>Tuple</code> or a scalar value (see note in the <a href="@ref">Indexing</a> section).</p><p>In this example, we will create a new table that contains the difference between the <code>high</code> and <code>low</code> value for each point in the table:</p><pre><code class="language-julia-repl">julia&gt; diffs = map(x-&gt;x.high - x.low, sampledata)
+DTable with 288 rows in 6 chunks:
+
+date        ticker  │
+────────────────────┼───────
+2010-01-01  &quot;GOOGL&quot; │ 88.52
+2010-01-01  &quot;GS&quot;    │ 23.87
+2010-01-01  &quot;KO&quot;    │ 2.4901
+2010-01-01  &quot;XRX&quot;   │ 0.57
+2010-02-01  &quot;GOOGL&quot; │ 15.75
+...</code></pre><div class="admonition note"><div class="admonition-title">pick</div><div class="admonition-text"><p>It&#39;s often the case that you want to work with a single data vector. Extracting a single column can be acheived by using a simple map.</p><pre><code class="language-">volumes = map(x-&gt;x.volume, sampledata)</code></pre><p>However, this operation allocates a new data column and then populates it element-wise. This could be expensive. <code>pick(:volume)</code> acts as the function <code>x-&gt;x.volume</code> but is optimized to not copy the data. Hence the above is equivalent to the more efficient version:</p><pre><code class="language-">volumes = map(pick(:volume), sampledata)</code></pre></div></div><p><code>reduce</code> takes a 2-argument function where the arguments are two data values and combines them until there&#39;s a single value left. Let&#39;s find the sum volume traded for all stocks in our data set</p><pre><code class="language-julia-repl">julia&gt; reduce(+, map(x-&gt;x.volume, sampledata))
+5.0983127744e10</code></pre><p>Or equivalently,</p><pre><code class="language-julia-repl">julia&gt; reduce(+, map(pick(:volume), sampledata))
+5.0983127744e10</code></pre><h2><a class="nav-anchor" id="Aggregation-1" href="#Aggregation-1">Aggregation</a></h2><h3><a class="nav-anchor" id="reducedim-and-select-1" href="#reducedim-and-select-1"><code>reducedim</code> and <code>select</code></a></h3><p>One way to get a simplified summary of the data is by removing a dimension and then aggregating all remaining rows that have the same index values.</p><p>This operation is called <a href="apireference.html#Base.reducedim-Tuple{Any,JuliaDB.DTable,Any}"><code>reducedim</code></a>. Let&#39;s aggregate the open, high, low, close and volume values after removing the <code>date</code> dimension. This should aggregate all rows for each ticker symbol together.</p><pre><code class="language-julia-repl">
+julia&gt; @everywhere function agg_ohlcv(x, y)
+           @NT(
+               open = x.open, # first
+               high = max(x.high, y.high),
+               low = min(x.low, y.low),
+               close = y.close, # last
+               volume = x.volume + y.volume,
+           )
+       end
+
+julia&gt; reducedim(agg_ohlcv, sampledata, 1)
+DTable with 4 chunks:
+
+ticker  │ open    high     low     close   volume
+────────┼────────────────────────────────────────────
+&quot;GOOGL&quot; │ 626.95  1228.88  454.87  783.79  6.71923e9
+&quot;GS&quot;    │ 170.05  218.77   91.14   193.07  8.07015e9
+&quot;KO&quot;    │ 57.16   81.33    36.28   42.89   1.86365e10
+&quot;XRX&quot;   │ 8.54    14.36    6.51    10.69   1.75572e10
+...</code></pre><div class="admonition info"><div class="admonition-title">Info</div><div class="admonition-text"><p>A few things to note about the <code>agg_ohlcv</code> function:</p><ul><li><p><code>agg_ohlcv</code> takes two data points as NamedTuples, and returns a NamedTuple (constructed using the <code>@NT</code> macro) with the exact same fields.</p></li><li><p><code>open</code> value of the first input is kept, <code>high</code> is calculated as the maximum of high value of both inputs, <code>low</code> is the minimum of low values, <code>close</code> keeps the value from the second input, <code>volume</code> is the sum of volumes of the inputs.</p></li><li><p><code>agg_ohlcv</code> function is defined with <code>@everywhere</code> - this causes the function to be defined on all worker processes, which is required since the aggregation will be performed on all workers.</p></li></ul></div></div><p>Equivalently, the same operation can be done by only <code>select</code>ing the 2nd (ticker) dimension.</p><pre><code class="language-julia-repl">julia&gt; select(sampledata, 2, agg=agg_ohlcv)
+DTable with 4 chunks:
+
+ticker  │ open    high     low     close   volume
+────────┼────────────────────────────────────────────
+&quot;GOOGL&quot; │ 626.95  1228.88  454.87  783.79  6.71923e9
+&quot;GS&quot;    │ 170.05  218.77   91.14   193.07  8.07015e9
+&quot;KO&quot;    │ 57.16   81.33    36.28   42.89   1.86365e10
+&quot;XRX&quot;   │ 8.54    14.36    6.51    10.69   1.75572e10
+...</code></pre><p>If <code>agg</code> option is not specified, the result might have multiple values for some indices, and so does not fully behave like a normal array anymore.</p><p>Operations that might leave the array in such a state accept the keyword argument <code>agg</code>, a function to use to combine all values associated with the same indices. If <code>agg</code> is not specified at first, one can aggregate such tables later using <a href="apireference.html#IndexedTables.aggregate_vec-Tuple{Any,JuliaDB.DTable}"><code>aggregate_vec</code></a>.</p><p><strong><code>reducedim_vec</code></strong></p><p>Some aggregation functions are best written for a vector of data values rather than performed pairwise. For example, calculating the mean of <code>high-low</code> difference for each ticker symbol.</p><pre><code class="language-julia-repl">
+julia&gt; @everywhere function mean_diff(values)
+           mean(map(x-&gt;x.high-x.low, values))
+       end
+
+julia&gt; reducedim_vec(mean_diff, sampledata, 1)
+DTable with 4 chunks:
+
+ticker  │
+────────┼─────────
+&quot;GOOGL&quot; │ 32.7057
+&quot;GS&quot;    │ 7.34402
+&quot;KO&quot;    │ 1.65157
+&quot;XRX&quot;   │ 0.509657
+...</code></pre><h3><a class="nav-anchor" id="Aggregation-by-converting-a-dimension-1" href="#Aggregation-by-converting-a-dimension-1">Aggregation by converting a dimension</a></h3><p>A location in the coordinate space of an array often has multiple possible descriptions.  This is especially common when describing data at different levels of detail.  For example, a point in time can be expressed at the level of seconds, minutes, or hours.</p><p>In our test dataset, the dates in the date column each fall in the different quarters of the year. It is possible to aggregate the data for each quarter together for each ticker symbol using <code>convertdim</code>.</p><p><code>convertdim</code> accepts a <code>DTable</code>, a dimension number to convert, a function or dictionary to apply to indices in that dimension, and an aggregation function (the aggregation function is needed in case the mapping is many-to-one). You can optionally give a new name to the converted dimension using the <code>name</code> keyword argument.</p><p>The following call therefore gives the quarterly aggregates for our data:</p><pre><code class="language-julia-repl">julia&gt; convertdim(sampledata, 1, Dates.firstdayofquarter,
+                            agg=agg_ohlcv, name=:quarter)
+DTable with 6 chunks:
+
+quarter     ticker  │ open    high     low     close   volume
+────────────────────┼───────────────────────────────────────────
+2010-01-01  &quot;GOOGL&quot; │ 626.95  629.51   531.75  532.69  4.49366e8
+2010-01-01  &quot;GS&quot;    │ 170.05  178.75   154.88  156.54  7.54197e8
+2010-01-01  &quot;KO&quot;    │ 57.16   57.4301  53.09   53.27   6.89538e8
+2010-01-01  &quot;XRX&quot;   │ 8.54    10.17    8.91    9.55    8.95918e8
+2010-04-01  &quot;GOOGL&quot; │ 571.35  597.84   457.83  482.37  4.28539e8
+...</code></pre><p>First every value in dimension <code>1</code> is converted using the function <code>Dates.firstdayofquarter</code>, i.e. to the first day of the quarter that date falls in. Next, the values in the table which correspond to the same indices (e.g. all values for the GOOGL stock in 1st quarter of 2010) are aggregated together using <code>agg</code>.</p><h2><a class="nav-anchor" id="Permuting-dimensions-1" href="#Permuting-dimensions-1">Permuting dimensions</a></h2><p>As with other multi-dimensional arrays, dimensions can be permuted to change the sort order of the data. In the context of our sample dataset, interchanging the dimensions would result in the data being sorted first by the stock symbol, and then within each stock symbol, it would be sorted by the date.</p><pre><code class="language-julia-repl">julia&gt; permutedims(sampledata, [2, 1])
+DTable with 6 chunks:
+
+ticker   date       │ open     high     low     close   volume
+────────────────────┼────────────────────────────────────────────
+&quot;GOOGL&quot;  2010-01-01 │ 626.95   629.51   540.99  626.75  1.78022e8
+&quot;GOOGL&quot;  2010-02-01 │ 534.602  547.5    531.75  533.02  1.03964e8
+&quot;GOOGL&quot;  2010-03-01 │ 529.2    588.275  569.74  532.69  1.67381e8
+&quot;GOOGL&quot;  2010-04-01 │ 571.35   597.84   537.68  568.8   1.45975e8
+&quot;GOOGL&quot;  2010-05-01 │ 526.5    532.92   493.45  530.6   1.62958e8
+...</code></pre><p>In some cases, such dimension permutations are needed for performance. The leftmost column is esssentially the primary key –- indexing is fastest in this dimension on each worker, and scanning along it incurs the least cache misses.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>JuliaDB can perform a distributed sort to keep the resultant data still distributed. Note that this operations can be expensive to do every time you load a dataset (a billion rows take a few minutes to reshuffle), hence it&#39;s advisable to do it once and save the result in a separate output directory for re-reading later. (See saving and loading section below).</p></div></div><h2><a class="nav-anchor" id="Joins-1" href="#Joins-1">Joins</a></h2><p>JuliaDB provides several <code>join</code> operations to combine two or more <code>DTable</code>s into one, namely <a href="apireference.html#IndexedTables.naturaljoin-Tuple{JuliaDB.DTable,JuliaDB.DTable}"><code>naturaljoin</code></a>, <a href="apireference.html#IndexedTables.leftjoin-Union{Tuple{JuliaDB.DTable{K,V},JuliaDB.DTable}, Tuple{K}, Tuple{V}} where V where K"><code>leftjoin</code></a>, <a href="apireference.html#Base.merge-Tuple{JuliaDB.DTable,JuliaDB.DTable}"><code>merge</code></a>, and <a href="apireference.html#IndexedTables.asofjoin-Tuple{JuliaDB.DTable,JuliaDB.DTable}"><code>asofjoin</code></a>.</p><footer><hr/><a class="next" href="apireference.html"><span class="direction">Next</span><span class="title">API Reference</span></a></footer></article></body></html>
