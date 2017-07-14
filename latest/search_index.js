@@ -197,7 +197,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API Reference",
     "title": "JuliaDB.save",
     "category": "Function",
-    "text": "save(t::DTable, outputdir::AbstractString)\n\nSaves a DTable to disk. This function blocks till all files data has been computed and saved. Saved data can be loaded with load.\n\nSee also ingest, load\n\n\n\n"
+    "text": "save(t::DTable, outputdir::AbstractString)\n\nSaves a DTable to disk. This function blocks till all chunks have been computed and saved. Saved data can be loaded with load.\n\nSee also ingest, load\n\n\n\n"
 },
 
 {
