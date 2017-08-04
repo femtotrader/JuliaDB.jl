@@ -217,9 +217,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "apireference.html#JuliaDB.distribute",
+    "location": "apireference.html#Dagger.distribute",
     "page": "API Reference",
-    "title": "JuliaDB.distribute",
+    "title": "Dagger.distribute",
     "category": "Function",
     "text": "distribute(itable::IndexedTable, rowgroups::AbstractArray)\n\nDistributes an IndexedTable object into a DTable by splitting it up into chunks of rowgroups elements. rowgroups is a vector specifying the number of rows in the chunks.\n\nReturns a DTable.\n\n\n\ndistribute(itable::IndexedTable, nchunks::Int=nworkers())\n\nDistributes an IndexedTable object into a DTable of nchunks chunks of approximately equal size.\n\nReturns a DTable.\n\n\n\n"
 },
