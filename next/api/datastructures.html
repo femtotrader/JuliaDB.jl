@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Data Structures · JuliaDB</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../assets/custom.css" rel="stylesheet" type="text/css"/><script src="../assets/custom.js"></script></head><body><nav class="toc"><h1>JuliaDB</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../index.html">Home</a></li><li><a class="toctext" href="index.html">API Reference</a></li><li class="current"><a class="toctext" href="datastructures.html">Data Structures</a><ul class="internal"><li><a class="toctext" href="#Table-1">Table</a></li><li><a class="toctext" href="#NDSparse-1">NDSparse</a></li><li><a class="toctext" href="#Indexing-1">Indexing</a></li></ul></li><li><a class="toctext" href="selection.html">Selection</a></li><li><a class="toctext" href="aggregation.html">Aggregation</a></li><li><a class="toctext" href="joins.html">Joins</a></li><li><a class="toctext" href="io.html">Loading and Saving</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="datastructures.html">Data Structures</a></li></ul><a class="edit-page" href="https://github.com/JuliaComputing/JuliaDB.jl/blob/master/docs/src/api/datastructures.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Data Structures</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Data-structures-1" href="#Data-structures-1">Data structures</a></h1><h2><a class="nav-anchor" id="Table-1" href="#Table-1">Table</a></h2><p>A Table is a collection of tuples or named tuples. These tuples are &quot;rows&quot; of the table. The values of the same field in all rows form a &quot;column&quot;. A Table can be constructed by passing the columns to the <code>table</code> function. The <code>names</code> argument sets the names of the columns:</p><pre><code class="language-julia-repl">julia&gt; t = table([1,2,3], [4,5,6], names=[:x, :y])
+Table with 3 rows, 2 columns:
+x  y
+────
+1  4
+2  5
+3  6</code></pre><p>Since a table iterates over rows, indexing with an iteger will return the row at that position:</p><pre><code class="language-julia-repl">julia&gt; row = t[2]
+(x = 2, y = 5)
+
+julia&gt; row.x
+2
+
+julia&gt; row.y
+5</code></pre><p>The returned value is a named tuple in this case.</p><p>Further, indexing a table with a range of indices or generally any array of integer indices will return a new table with those subset of rows.</p><pre><code class="language-julia-repl">julia&gt; t[2:3]
+Table with 2 rows, 2 columns:
+x  y
+────
+2  5
+3  6
+
+julia&gt; t[[1,1,3]]
+Table with 3 rows, 2 columns:
+x  y
+────
+1  4
+1  4
+3  6
+</code></pre><p>Optionally, a subset of fields can be chosen as &quot;primary key&quot;. The rows are kept sorted in lexicographic order of the primary key fields. The benefits are:</p><ol><li><p>It makes lookup, grouping, join and sort operations fast when the primary key fields are involved.</p></li><li><p>It provides a natural default for operations such as <a href="aggregation.html#IndexedTables.groupby"><code>groupby</code></a> and <a href="joins.html#Base.join"><code>join</code></a></p></li></ol><p>Passing the <code>pkey</code> option to <code>table</code> constructor will select the primary keys.</p><pre><code class="language-julia-repl">julia&gt; b = table([2,1,2,1],[2,3,1,3],[4,5,6,7], names=[:x,:y,:z], pkey=(:x,:y))
+Table with 4 rows, 3 columns:
+x  y  z
+───────
+1  3  5
+1  3  7
+2  1  6
+2  2  4</code></pre><p>Note that the output table is sorted by the primary key fields.</p><p>Below is the full documentation of the <code>table</code> constructor:</p><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="IndexedTables.table" href="#IndexedTables.table"><code>IndexedTables.table</code></a> — <span class="docstring-category">Function</span>.</div><div><p><code>table(cols::AbstractVector...; names, &lt;options&gt;)</code></p><p>Create a table with columns given by <code>cols</code>.</p><pre><code class="language-julia-repl">julia&gt; a = table([1,2,3], [4,5,6])
+Table with 3 rows, 2 columns:
+1  2
+────
+1  4
+2  5
+3  6</code></pre><p><code>names</code> specify names for columns. If specified, the table will be an iterator of named tuples.</p><pre><code class="language-julia-repl">julia&gt; b = table([1,2,3], [4,5,6], names=[:x, :y])
+Table with 3 rows, 2 columns:
+x  y
+────
+1  4
+2  5
+3  6
+</code></pre><p><code>table(cols::Union{Tuple, NamedTuple}; &lt;options&gt;)</code></p><p>Convert a struct of columns to a table of structs.</p><pre><code class="language-julia-repl">julia&gt; table(([1,2,3], [4,5,6])) == a
+true
+
+julia&gt; table(@NT(x=[1,2,3], y=[4,5,6])) == b
+true</code></pre><p><code>table(cols::Columns; &lt;options&gt;)</code></p><p>Construct a table from a vector of tuples. See <a href="selection.html#IndexedTables.rows"><code>rows</code></a>.</p><pre><code class="language-julia-repl">julia&gt; table(Columns([1,2,3], [4,5,6])) == a
+true
+
+julia&gt; table(Columns(x=[1,2,3], y=[4,5,6])) == b
+true</code></pre><p><code>table(t::Union{Table, NDSparse}; &lt;options&gt;)</code></p><p>Copy a Table or NDSparse to create a new table. The same primary keys as the input are used.</p><pre><code class="language-julia-repl">julia&gt; b == table(b)
+true</code></pre><p><strong>Options:</strong></p><ul><li><p><code>pkey</code>: select columns to act as the primary key. By default, no columns are used as primary key.</p></li><li><p><code>presorted</code>: is the data pre-sorted by primary key columns? If so, skip sorting. <code>false</code> by default. Irrelevant if <code>chunks</code> is specified.</p></li><li><p><code>copy</code>: creates a copy of the input vectors if <code>true</code>. <code>true</code> by default. Irrelavant if <code>chunks</code> is specified.</p></li><li><p><code>chunks</code>: distribute the table into <code>chunks</code> (Integer) chunks (a safe bet is nworkers()). Table is not distributed by default. See <a href="api/@distributed">Distributed</a> docs.</p></li></ul><p><strong>Examples:</strong></p><p>Specifying <code>pkey</code> will cause the table to be sorted by the columns named in pkey:</p><pre><code class="language-julia-repl">julia&gt; b = table([2,3,1], [4,5,6], names=[:x, :y], pkey=:x)
+Table with 3 rows, 2 columns:
+x  y
+────
+1  6
+2  4
+3  5
+
+julia&gt; b = table([2,1,2,1],[2,3,1,3],[4,5,6,7],
+                 names=[:x, :y, :z], pkey=(:x,:y))
+Table with 4 rows, 3 columns:
+x  y  z
+───────
+1  3  5
+1  3  7
+2  1  6
+2  2  4</code></pre><p>Note that the keys do not have to be unique.</p><p><code>chunks</code> option creates a distributed table.</p><p><code>chunks</code> can be:</p><ol><li><p>An integer – number of chunks to create</p></li><li><p>An vector of <code>k</code> integers – number of elements in each of the <code>k</code> chunks.</p></li><li><p>The distribution of another array. i.e. <code>vec.subdomains</code> where <code>vec</code> is a distributed array.</p></li></ol><pre><code class="language-julia-repl">julia&gt; t = table([2,3,1,4], [4,5,6,7],
+                  names=[:x, :y], pkey=:x, chunks=2)
+Distributed Table with 4 rows in 2 chunks:
+x  y
+────
+1  6
+2  4
+3  5
+4  7</code></pre><p>A distributed table will be constructed if one of the arrays passed into <code>table</code> constructor is a distributed array. A distributed Array can be constructed using <code>distribute</code>:</p><pre><code class="language-julia-repl">
+julia&gt; x = distribute([1,2,3,4], 2);
+
+julia&gt; t = table(x, [5,6,7,8], names=[:x,:y])
+Distributed Table with 4 rows in 2 chunks:
+x  y
+────
+1  5
+2  6
+3  7
+4  8
+
+julia&gt; table(columns(t)..., [9,10,11,12],
+             names=[:x,:y,:z])
+Distributed Table with 4 rows in 2 chunks:
+x  y  z
+────────
+1  5  9
+2  6  10
+3  7  11
+4  8  12
+</code></pre><p>Distribution is done to match the first distributed column from left to right. Specify <code>chunks</code> to override this.</p></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/IndexedTables.jl/blob/33ce7b43eea476c059a8f6732edac1dd5d9fa250/src/table.jl#L36-L178">source</a></section><h2><a class="nav-anchor" id="NDSparse-1" href="#NDSparse-1">NDSparse</a></h2><p>An <code>NDSparse</code> object is a collection of values sparsely distributed over domains which may be discrete or continuous. For example, stock prices are sparsely distributed over the domains of stock ticker symbols, and timestamps.</p><pre><code class="language-julia-repl">julia&gt; prices = ndsparse(@NT(ticker=[&quot;GOOG&quot;, &quot;GOOG&quot;, &quot;KO&quot;, &quot;KO&quot;],
+                         date=Date.([&quot;2017-11-10&quot;, &quot;2017-11-11&quot;,
+                                     &quot;2017-11-10&quot;, &quot;2017-11-11&quot;])),
+                         [1029.74, 1028.23, 46.23, 46.53])
+2-d NDSparse with 4 values (Float64):
+ticker  date       │
+───────────────────┼────────
+&quot;GOOG&quot;  2017-11-10 │ 1029.74
+&quot;GOOG&quot;  2017-11-11 │ 1028.23
+&quot;KO&quot;    2017-11-10 │ 46.23
+&quot;KO&quot;    2017-11-11 │ 46.53</code></pre><p><code>NDSparse</code> maps tuples of indices of arbitrary types to values, just like an Array maps tuples of integer indices to values. Here, the indices are shown to the left of the vertical line, while the values they map to are to the right.</p><p>The indexing syntax can be used for lookup:</p><pre><code class="language-julia-repl">julia&gt; prices[&quot;KO&quot;, Date(&quot;2017-11-10&quot;)]
+46.23
+
+julia&gt; prices[&quot;KO&quot;, :]
+2-d NDSparse with 2 values (Float64):
+ticker  date       │
+───────────────────┼──────
+&quot;KO&quot;    2017-11-10 │ 46.23
+&quot;KO&quot;    2017-11-11 │ 46.53
+
+julia&gt; prices[:, Date(&quot;2017-11-10&quot;)]
+2-d NDSparse with 2 values (Float64):
+ticker  date       │
+───────────────────┼────────
+&quot;GOOG&quot;  2017-11-10 │ 1029.74
+&quot;KO&quot;    2017-11-10 │ 46.23</code></pre><p>Similarly, other array operations like <a href="joins.html#Base.broadcast-Tuple{Function,IndexedTables.NDSparse,IndexedTables.NDSparse}"><code>broadcast</code></a>, <a href="aggregation.html#Base.reducedim"><code>reducedim</code></a>, and <a href="api/@ref"><code>mapslices</code></a> are defined for <code>NDSparse</code> as for <code>Array</code>s.</p><p>An NDSparse is constructed using the <code>ndsparse</code> function.</p><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="IndexedTables.ndsparse" href="#IndexedTables.ndsparse"><code>IndexedTables.ndsparse</code></a> — <span class="docstring-category">Function</span>.</div><div><p><code>ndsparse(indices, data; agg, presorted, copy, chunks)</code></p><p>Construct an NDSparse array with the given indices and data. Each vector in <code>indices</code> represents the index values for one dimension. On construction, the indices and data are sorted in lexicographic order of the indices.</p><p><strong>Arguments:</strong></p><ul><li><p><code>agg::Function</code>: If <code>indices</code> contains duplicate entries, the corresponding data items are reduced using this 2-argument function.</p></li><li><p><code>presorted::Bool</code>: If true, the indices are assumed to already be sorted and no sorting is done.</p></li><li><p><code>copy::Bool</code>: If true, the storage for the new array will not be shared with the passed indices and data. If false (the default), the passed arrays will be copied only if necessary for sorting. The only way to guarantee sharing of data is to pass <code>presorted=true</code>.</p></li><li><p><code>chunks::Integer</code>: distribute the table into <code>chunks</code> (Integer) chunks (a safe bet is nworkers()). Not distributed by default. See <a href="api/@distributed">Distributed</a> docs.</p></li></ul><p><strong>Examples:</strong></p><p>1-dimensional NDSparse can be constructed with a single array as index.</p><pre><code class="language-julia-repl">julia&gt; x = ndsparse([&quot;a&quot;,&quot;b&quot;],[3,4])
+1-d NDSparse with 2 values (Int64):
+1   │
+────┼──
+&quot;a&quot; │ 3
+&quot;b&quot; │ 4
+
+julia&gt; keytype(x), eltype(x)
+(Tuple{String}, Int64)
+</code></pre><p>A dimension will be named if constructed with a named tuple of columns as index.</p><pre><code class="language-julia-repl">julia&gt; x = ndsparse(@NT(date=Date.(2014:2017)), [4:7;])
+1-d NDSparse with 4 values (Int64):
+date       │
+───────────┼──
+2014-01-01 │ 4
+2015-01-01 │ 5
+2016-01-01 │ 6
+2017-01-01 │ 7
+</code></pre><pre><code class="language-julia-repl">julia&gt; x[Date(&quot;2015-01-01&quot;)]
+5
+
+julia&gt; keytype(x), eltype(x)
+(Tuple{Date}, Int64)
+</code></pre><p>Multi-dimensional <code>NDSparse</code> can be constructed by passing a tuple of index columns:</p><pre><code class="language-julia-repl">julia&gt; x = ndsparse(([&quot;a&quot;,&quot;b&quot;],[3,4]), [5,6])
+2-d NDSparse with 2 values (Int64):
+1    2 │
+───────┼──
+&quot;a&quot;  3 │ 5
+&quot;b&quot;  4 │ 6
+
+julia&gt; keytype(x), eltype(x)
+(Tuple{String,Int64}, Int64)
+
+julia&gt; x[&quot;a&quot;, 3]
+5</code></pre><p>The data itself can also contain tuples (these are stored in columnar format, just like in <code>table</code>.)</p><pre><code class="language-julia-repl">julia&gt; x = ndsparse(([&quot;a&quot;,&quot;b&quot;],[3,4]), ([5,6], [7.,8.]))
+2-d NDSparse with 2 values (2-tuples):
+1    2 │ 3  4
+───────┼───────
+&quot;a&quot;  3 │ 5  7.0
+&quot;b&quot;  4 │ 6  8.0
+
+julia&gt; x = ndsparse(@NT(x=[&quot;a&quot;,&quot;a&quot;,&quot;b&quot;],y=[3,4,4]),
+                    @NT(p=[5,6,7], q=[8.,9.,10.]))
+2-d NDSparse with 3 values (2 field named tuples):
+x    y │ p  q
+───────┼────────
+&quot;a&quot;  3 │ 5  8.0
+&quot;a&quot;  4 │ 6  9.0
+&quot;b&quot;  4 │ 7  10.0
+
+julia&gt; keytype(x), eltype(x)
+(Tuple{String,Int64}, NamedTuples._NT_p_q{Int64,Float64})
+
+julia&gt; x[&quot;a&quot;, :]
+2-d NDSparse with 2 values (2 field named tuples):
+x    y │ p  q
+───────┼───────
+&quot;a&quot;  3 │ 5  8.0
+&quot;a&quot;  4 │ 6  9.0
+</code></pre><p>Passing a <code>chunks</code> option to <code>ndsparse</code>, or constructing with a distributed array will cause the result to be distributed. Use <code>distribute</code> function to distribute an array.</p><pre><code class="language-julia-repl">julia&gt; x = ndsparse(@NT(date=Date.(2014:2017)), [4:7.;], chunks=2)
+1-d Distributed NDSparse with 4 values (Float64) in 2 chunks:
+date       │
+───────────┼────
+2014-01-01 │ 4.0
+2015-01-01 │ 5.0
+2016-01-01 │ 6.0
+2017-01-01 │ 7.0
+
+julia&gt; x = ndsparse(@NT(date=Date.(2014:2017)), distribute([4:7.0;], 2))
+1-d Distributed NDSparse with 4 values (Float64) in 2 chunks:
+date       │
+───────────┼────
+2014-01-01 │ 4.0
+2015-01-01 │ 5.0
+2016-01-01 │ 6.0
+2017-01-01 │ 7.0</code></pre><p>Distribution is done to match the first distributed column from left to right. Specify <code>chunks</code> to override this.</p></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/IndexedTables.jl/blob/33ce7b43eea476c059a8f6732edac1dd5d9fa250/src/ndsparse.jl#L24-L145">source</a></section><h2><a class="nav-anchor" id="Indexing-1" href="#Indexing-1">Indexing</a></h2><p>This section describes the <code>reindex</code> and <code>rechunk</code> functions which let you change the indexed columns in a table or NDSparse, and sort the contents of a distributed table or NDSparse respectively.</p><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="IndexedTables.reindex" href="#IndexedTables.reindex"><code>IndexedTables.reindex</code></a> — <span class="docstring-category">Function</span>.</div><div><p><code>reindex(t::Table, by[, select])</code></p><p>Reindex <code>t</code> by columns selected in <code>by</code>. Keeps columns selected by <code>select</code> as non-indexed columns. By default all columns not mentioned in <code>by</code> are kept.</p><p>Use <a href="api/@ref"><code>selectkeys</code></a> to reindex and NDSparse object.</p><pre><code class="language-julia-repl">julia&gt; t = table([2,1],[1,3],[4,5], names=[:x,:y,:z], pkey=(1,2))
+
+julia&gt; reindex(t, (:y, :z))
+Table with 2 rows, 3 columns:
+y  z  x
+───────
+1  4  2
+3  5  1
+
+julia&gt; pkeynames(t)
+(:y, :z)
+
+julia&gt; reindex(t, (:w=&gt;[4,5], :z))
+Table with 2 rows, 4 columns:
+w  z  x  y
+──────────
+4  5  1  3
+5  4  2  1
+
+julia&gt; pkeynames(t)
+(:w, :z)
+</code></pre></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/IndexedTables.jl/blob/33ce7b43eea476c059a8f6732edac1dd5d9fa250/src/selection.jl#L147-L180">source</a></section><pre><code class="language-none">rechunk</code></pre><footer><hr/><a class="previous" href="index.html"><span class="direction">Previous</span><span class="title">API Reference</span></a><a class="next" href="selection.html"><span class="direction">Next</span><span class="title">Selection</span></a></footer></article></body></html>
