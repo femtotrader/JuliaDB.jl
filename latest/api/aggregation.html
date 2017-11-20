@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Aggregation · JuliaDB</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../assets/custom.css" rel="stylesheet" type="text/css"/><script src="../assets/custom.js"></script></head><body><nav class="toc"><h1>JuliaDB</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../index.html">Home</a></li><li><a class="toctext" href="index.html">API Reference</a></li><li><a class="toctext" href="datastructures.html">Data Structures</a></li><li><a class="toctext" href="selection.html">Selection</a></li><li class="current"><a class="toctext" href="aggregation.html">Aggregation</a><ul class="internal"><li><a class="toctext" href="#Reduce-1">Reduce</a></li><li><a class="toctext" href="#Grouping-1">Grouping</a></li><li><a class="toctext" href="#Reducedim-1">Reducedim</a></li></ul></li><li><a class="toctext" href="joins.html">Joins</a></li><li><a class="toctext" href="io.html">Loading and Saving</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="aggregation.html">Aggregation</a></li></ul><a class="edit-page" href="https://github.com/JuliaComputing/JuliaDB.jl/blob/master/docs/src/api/aggregation.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Aggregation</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Aggregation-1" href="#Aggregation-1">Aggregation</a></h1><h2><a class="nav-anchor" id="Reduce-1" href="#Reduce-1">Reduce</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Base.reduce" href="#Base.reduce"><code>Base.reduce</code></a> — <span class="docstring-category">Function</span>.</div><div><p><code>reduce(f, t::Table; select::Selection)</code></p><p>Reduce <code>t</code> by applying <code>f</code> pair-wise on values or structs selected by <code>select</code>.</p><p><code>f</code> can be:</p><ol><li><p>A function</p></li><li><p>An OnlineStat</p></li><li><p>A tuple of functions and/or OnlineStats</p></li><li><p>A named tuple of functions and/or OnlineStats</p></li><li><p>A named tuple of (selector =&gt; function or OnlineStat) pairs</p></li></ol><pre><code class="language-julia-repl">julia&gt; t = table([0.1, 0.5, 0.75], [0,1,2], names=[:t, :x])
+Table with 3 rows, 2 columns:
+t     x
+───────
+0.1   0
+0.5   1
+0.75  2</code></pre><p>When <code>f</code> is a function, it reduces the selection as usual:</p><pre><code class="language-julia-repl">julia&gt; reduce(+, t, select=:t)
+1.35</code></pre><p>If <code>select</code> is omitted, the rows themselves are passed to reduce as tuples.</p><pre><code class="language-julia-repl">julia&gt; reduce((a, b) -&gt; @NT(t=a.t+b.t, x=a.x+b.x), t)
+(t = 1.35, x = 3)</code></pre><p>If <code>f</code> is an OnlineStat object from the <a href="https://github.com/joshday/OnlineStats.jl">OnlineStats</a> package, the statistic is computed on the selection.</p><pre><code class="language-julia-repl">julia&gt; using OnlineStats
+
+julia&gt; reduce(Mean(), t, select=:t)
+▦ Series{0,Tuple{Mean},EqualWeight}
+┣━━ EqualWeight(nobs = 3)
+┗━━━┓
+    ┗━━ Mean(0.45)</code></pre><p><strong>Reducing with multiple functions</strong></p><p>Often one needs many aggregate values from a table. This is when <code>f</code> can be passed as a tuple of functions:</p><pre><code class="language-julia-repl">julia&gt; y = reduce((min, max), t, select=:x)
+(min = 0, max = 2)
+
+julia&gt; y.max
+2
+
+julia&gt; y.min
+0</code></pre><p>Note that the return value of invoking reduce with a tuple of functions will be a named tuple which has the function names as the keys. In the example, we reduced using <code>min</code> and <code>max</code> functions to obtain the minimum and maximum values in column <code>x</code>.</p><p>If you want to give a different name to the fields in the output, use a named tuple as <code>f</code> instead:</p><pre><code class="language-julia-repl">julia&gt; y = reduce(@NT(sum=+, prod=*), t, select=:x)
+(sum = 3, prod = 0)</code></pre><p>You can also compute many OnlineStats by passing tuple or named tuple of OnlineStat objects as the reducer.</p><pre><code class="language-julia-repl">julia&gt; y = reduce((Mean(), Variance()), t, select=:t)
+(Mean = ▦ Series{0,Tuple{Mean},EqualWeight}
+┣━━ EqualWeight(nobs = 3)
+┗━━━┓
+    ┗━━ Mean(0.45), Variance = ▦ Series{0,Tuple{Variance},EqualWeight}
+┣━━ EqualWeight(nobs = 3)
+┗━━━┓
+    ┗━━ Variance(0.1075))
+
+julia&gt; y.Mean
+▦ Series{0,Tuple{Mean},EqualWeight}
+┣━━ EqualWeight(nobs = 3)
+┗━━━┓
+    ┗━━ Mean(0.45)
+
+julia&gt; y.Variance
+▦ Series{0,Tuple{Variance},EqualWeight}
+┣━━ EqualWeight(nobs = 3)
+┗━━━┓
+    ┗━━ Variance(0.1075)</code></pre><p><strong>Combining reduction and selection</strong></p><p>In the above section where we computed many reduced values at once, we have been using the same selection for all reducers, that specified by <code>select</code>. It&#39;s possible to select different inputs for different reducers by using a named tuple of <code>slector =&gt; function</code> pairs:</p><pre><code class="language-julia-repl">julia&gt; reduce(@NT(xsum=:x=&gt;+, negtsum=(:t=&gt;-)=&gt;+), t)
+(xsum = 3, negtsum = -1.35)
+</code></pre><p>See <a href="api/@ref"><code>Selection</code></a> for more on what selectors can be specified. Here since each output can select its own input, <code>select</code> keyword is unsually unnecessary. If specified, the slections in the reducer tuple will be done over the result of selecting with the <code>select</code> argument.</p></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/IndexedTables.jl/blob/cdcdd396b1aa0cf8451f9ec41531a52d40dc25c1/src/reduce.jl#L4-L116">source</a></section><h2><a class="nav-anchor" id="Grouping-1" href="#Grouping-1">Grouping</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="IndexedTables.groupreduce" href="#IndexedTables.groupreduce"><code>IndexedTables.groupreduce</code></a> — <span class="docstring-category">Function</span>.</div><div><p><code>groupreduce(f, t[, by::Selection]; select::Selection)</code></p><p>Group rows by <code>by</code>, and apply <code>f</code> to reduce each group. <code>f</code> can be a function, OnlineStat or a struct of these as described in <a href="aggregation.html#Base.reduce"><code>reduce</code></a>. Recommended: see documentation for <a href="aggregation.html#Base.reduce"><code>reduce</code></a> first. The result of reducing each group is put in a table keyed by unique <code>by</code> values, the names of the output columns are the same as the names of the fields of the reduced tuples.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; t=table([1,1,1,2,2,2], [1,1,2,2,1,1], [1,2,3,4,5,6],
+               names=[:x,:y,:z]);
+
+julia&gt; groupreduce(+, t, :x, select=:z)
+Table with 2 rows, 2 columns:
+x  +
+─────
+1  6
+2  15
+
+julia&gt; groupreduce(+, t, (:x, :y), select=:z)
+Table with 4 rows, 3 columns:
+x  y  +
+────────
+1  1  3
+1  2  3
+2  1  11
+2  2  4
+
+julia&gt; groupreduce((+, min, max), t, (:x, :y), select=:z)
+Table with 4 rows, 5 columns:
+x  y  +   min  max
+──────────────────
+1  1  3   1    2
+1  2  3   3    3
+2  1  11  5    6
+2  2  4   4    4</code></pre><p>If <code>f</code> is a single function or a tuple of functions, the output columns will be named the same as the functions themselves. To change the name, pass a named tuple:</p><pre><code class="language-julia-repl">julia&gt; groupreduce(@NT(zsum=+, zmin=min, zmax=max), t, (:x, :y), select=:z)
+Table with 4 rows, 5 columns:
+x  y  zsum  zmin  zmax
+──────────────────────
+1  1  3     1     2
+1  2  3     3     3
+2  1  11    5     6
+2  2  4     4     4</code></pre><p>Finally, it&#39;s possible to select different inputs for different reducers by using a named tuple of <code>slector =&gt; function</code> pairs:</p><pre><code class="language-julia-repl">julia&gt; groupreduce(@NT(xsum=:x=&gt;+, negysum=(:y=&gt;-)=&gt;+), t, :x)
+Table with 2 rows, 3 columns:
+x  xsum  negysum
+────────────────
+1  3     -4
+2  6     -4
+</code></pre></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/IndexedTables.jl/blob/cdcdd396b1aa0cf8451f9ec41531a52d40dc25c1/src/reduce.jl#L154-L216">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="IndexedTables.groupby" href="#IndexedTables.groupby"><code>IndexedTables.groupby</code></a> — <span class="docstring-category">Function</span>.</div><div><p><code>groupby(f, t[, by::Selection]; select::Selection)</code></p><p>Group rows by <code>by</code>, and apply <code>f</code> to each group. <code>f</code> can be a function or a tuple of functions. The result of <code>f</code> on each group is put in a table keyed by unique <code>by</code> values.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; t=table([1,1,1,2,2,2], [1,1,2,2,1,1], [1,2,3,4,5,6],
+               names=[:x,:y,:z]);
+
+julia&gt; groupby(mean, t, :x, select=:z)
+Table with 2 rows, 2 columns:
+x  mean
+───────
+1  2.0
+2  5.0
+
+julia&gt; groupby(identity, t, (:x, :y), select=:z)
+Table with 4 rows, 3 columns:
+x  y  identity
+──────────────
+1  1  [1, 2]
+1  2  [3]
+2  1  [5, 6]
+2  2  [4]
+
+julia&gt; groupby(mean, t, (:x, :y), select=:z)
+Table with 4 rows, 3 columns:
+x  y  mean
+──────────
+1  1  1.5
+1  2  3.0
+2  1  5.5
+2  2  4.0</code></pre><p>multiple aggregates can be computed by passing a tuple of functions:</p><pre><code class="language-julia-repl">julia&gt; groupby((mean, std, var), t, :y, select=:z)
+Table with 2 rows, 4 columns:
+y  mean  std       var
+──────────────────────────
+1  3.5   2.38048   5.66667
+2  3.5   0.707107  0.5
+
+julia&gt; groupby(@NT(q25=z-&gt;quantile(z, 0.25), q50=median,
+                   q75=z-&gt;quantile(z, 0.75)), t, :y, select=:z)
+Table with 2 rows, 4 columns:
+y  q25   q50  q75
+──────────────────
+1  1.75  3.5  5.25
+2  3.25  3.5  3.75</code></pre><p>Finally, it&#39;s possible to select different inputs for different functions by using a named tuple of <code>slector =&gt; function</code> pairs:</p><pre><code class="language-julia-repl">julia&gt; groupby(@NT(xmean=:z=&gt;mean, ystd=(:y=&gt;-)=&gt;std), t, :x)
+Table with 2 rows, 3 columns:
+x  xmean  ystd
+─────────────────
+1  2.0    0.57735
+2  5.0    0.57735
+</code></pre></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/IndexedTables.jl/blob/cdcdd396b1aa0cf8451f9ec41531a52d40dc25c1/src/reduce.jl#L286-L354">source</a></section><h2><a class="nav-anchor" id="Reducedim-1" href="#Reducedim-1">Reducedim</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="Base.reducedim" href="#Base.reducedim"><code>Base.reducedim</code></a> — <span class="docstring-category">Function</span>.</div><div><p><code>reducedim(f, x::NDSparse, dims)</code></p><p>Drop <code>dims</code> dimension(s) and aggregate with <code>f</code>.</p><pre><code class="language-julia-repl">julia&gt; x = ndsparse(@NT(x=[1,1,1,2,2,2],
+                        y=[1,2,2,1,2,2],
+                        z=[1,1,2,1,1,2]), [1,2,3,4,5,6])
+3-d NDSparse with 6 values (Int64):
+x  y  z │
+────────┼──
+1  1  1 │ 1
+1  2  1 │ 2
+1  2  2 │ 3
+2  1  1 │ 4
+2  2  1 │ 5
+2  2  2 │ 6
+
+julia&gt; reducedim(+, x, 1)
+2-d NDSparse with 3 values (Int64):
+y  z │
+─────┼──
+1  1 │ 5
+2  1 │ 7
+2  2 │ 9
+
+julia&gt; reducedim(+, x, (1,3))
+1-d NDSparse with 2 values (Int64):
+y │
+──┼───
+1 │ 5
+2 │ 16
+</code></pre></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/IndexedTables.jl/blob/cdcdd396b1aa0cf8451f9ec41531a52d40dc25c1/src/reduce.jl#L432-L467">source</a></section><footer><hr/><a class="previous" href="selection.html"><span class="direction">Previous</span><span class="title">Selection</span></a><a class="next" href="joins.html"><span class="direction">Next</span><span class="title">Joins</span></a></footer></article></body></html>
