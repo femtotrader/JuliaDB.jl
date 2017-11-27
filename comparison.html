@@ -1,0 +1,119 @@
+---
+layout: default
+---
+<style>
+thead {
+    font-weight: bold;
+}
+
+table {
+    border: 1px solid #aaa;
+}
+
+td {
+    padding: 0.5em;
+    border-left: 1px solid #aaa;
+}
+</style>
+
+<div class="u-center u-cols-12">
+<div class="u-vskip-2"></div>
+<h2 class="u-title-medium-small u-slab text-blue u-bold">Comparisons</h2>
+<div class="u-vskip-2"></div>
+
+ <table class="waffle" cellspacing="0" cellpadding="0">
+    <thead>
+    <tr style="height:20px;">
+        <td>Feature</td>
+        <td>JuliaDB</td>
+        <td>Pandas</td>
+        <td>xts</td>
+        <td>TimeArray</td>
+    </tr>
+    </thead>
+    <tbody>
+        <tr style="height:20px;">
+            <td>Distributed Computing</td>
+            <td><img src="https://juliacomputing.com/assets/img/new/yup.svg" style="height: 16px; width: auto;"></td>
+            <td><img src="https://juliacomputing.com/assets/img/new/nope.svg" style="height: 16px; width: auto;"></td>
+            <td><img src="https://juliacomputing.com/assets/img/new/nope.svg" style="height: 16px; width: auto;"></td>
+            <td><img src="https://juliacomputing.com/assets/img/new/nope.svg" style="height: 16px; width: auto;"></td>
+        </tr>
+        <tr style="height:20px;">
+            <td>Out-of-Core Processing</td>
+            <td><img src="https://juliacomputing.com/assets/img/new/yup.svg" style="height: 16px; width: auto;"></td>
+            <td><img src="https://juliacomputing.com/assets/img/new/nope.svg" style="height: 16px; width: auto;"></td>
+            <td><img src="https://juliacomputing.com/assets/img/new/nope.svg" style="height: 16px; width: auto;"></td>
+            <td><img src="https://juliacomputing.com/assets/img/new/nope.svg" style="height: 16px; width: auto;"></td>
+        </tr>
+        <tr style="height:20px;">
+            <td>Number of Indexes</td>
+            <td>Multiple</td>
+            <td>Multiple*</td>
+            <td>One (time)</td>
+            <td>One (time)</td>
+        </tr>
+        <tr style="height:20px;">
+            <td dir="ltr">N-D Data Structure</td>
+            <td dir="ltr"><img src="https://juliacomputing.com/assets/img/new/yup.svg" style="height: 16px; width: auto;"></td>
+            <td dir="ltr"><img src="https://juliacomputing.com/assets/img/new/nope.svg" style="height: 16px; width: auto;">*</td>
+            <td>N/A</td>
+            <td>N/A</td>
+        </tr>
+        <tr style="height:20px;">
+            <td>Index Types</td>
+            <td>Any ordered type</td>
+            <td>Pandas built-ins</td>
+            <td>Time object</td>
+            <td>Time object</td>
+        </tr>
+        <tr style="height:20px;">
+            <td>Value Types</td>
+            <td>Any</td>
+            <td>Pandas built-ins</td>
+            <td>R's built-ins</td>
+            <td>Any</td>
+        </tr>
+        <tr style="height:20px;">
+            <td>Values stored as</td>
+            <td>Vectors of different types</td>
+            <td>Vectors of different types</td>
+            <td>Matrix of one type</td>
+            <td>Matrix of one type</td>
+        </tr>
+        <tr style="height:20px;">
+            <td>Compiled Queries</td>
+            <td><img src="https://juliacomputing.com/assets/img/new/yup.svg" style="height: 16px; width: auto;"></td>
+            <td>Some</td>
+            <td>Some</td>
+            <td><img src="https://juliacomputing.com/assets/img/new/yup.svg" style="height: 16px; width: auto;"></td>
+        </tr>
+        <tr style="height:20px;">
+            <td>Time Zone Support</td>
+            <td>External, <span>TimeZones.jl</span></td>
+            <td>External, <span>pytz</span></td>
+            <td>Built in</td>
+            <td>External, <span>TimeZones.jl</span></td>
+        </tr>
+    </tbody>
+</table>
+<div class="u-vskip-2"></div>
+* Pandas deprecated the Panel types. Docs point to http://xarray.pydata.org/en/stable/
+
+<div class="u-vskip-2"></div>
+<strong> References </strong>
+<ul>
+    <li>
+<a href="http://pandas.pydata.org/pandas-docs/stable/comparison_with_r.html">http://pandas.pydata.org/pandas-docs/stable/comparison_with_r.html</a>	Syntax comparison, pandas and R
+    </li>
+    <li>
+<a href="http://pandas.pydata.org/pandas-docs/stable/basics.html#dtypes">http://pandas.pydata.org/pandas-docs/stable/basics.html#dtypes</a>	Available data types in pandas
+    </li>
+    <li>
+<a href="https://github.com/pydata/xarray/">https://github.com/pydata/xarray/</a>	ND data in python, exists because pandas' Panel data structure is deprecated
+    </li>
+    <li>
+<a href="http://pandas-docs.github.io/pandas-docs-travis/io.html">http://pandas-docs.github.io/pandas-docs-travis/io.html</a>	out-of-core processing by iterating chunks of a text file
+    </li>
+</ul>
+</div>
