@@ -37,7 +37,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Resources",
     "category": "section",
-    "text": "API Reference\nIssue tracker\nSource code\nSlack channel"
+    "text": "API Reference\nOut-of-core processing\nIssue tracker\nSource code\nSlack channel"
 },
 
 {
@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API Reference",
     "title": "Aggregation",
     "category": "section",
-    "text": "Grouping and reduction with functions or Online statistics.reduce - aggregate a dataset using functions or OnlineStats\ngroupreduce - aggregate groups of rows using functions or OnlineStats\ngroupby - collect groups of rows together\nreducedim - drop a dimension in NDSparse and aggregate"
+    "text": "Grouping and reduction with functions or Online statistics.reduce - aggregate a dataset using functions or OnlineStats\ngroupreduce - aggregate groups of rows using functions or OnlineStats\ngroupby - collect groups of rows together\nsummarize - apply summary functions to selected columns\nreducedim - drop a dimension in NDSparse and aggregate"
 },
 
 {
@@ -409,6 +409,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "api/aggregation.html#IndexedTables.summarize",
+    "page": "Aggregation",
+    "title": "IndexedTables.summarize",
+    "category": "Function",
+    "text": "summarize(f, t, by = pkeynames(t); select = excludecols(t, by))\n\nApply summary functions column-wise to a table. Return a NamedTuple in the non-grouped case and a table in the grouped case.\n\nExamples\n\njulia> t = table([1, 2, 3], [1, 1, 1], names = [:x, :y]);\n\njulia> summarize((mean, std), t)\n(x_mean = 2.0, y_mean = 1.0, x_std = 1.0, y_std = 0.0)\n\njulia> s = table([\"a\",\"a\",\"b\",\"b\"], [1,3,5,7], [2,2,2,2], names = [:x, :y, :z], pkey = :x);\n\njulia> summarize(mean, s)\nTable with 2 rows, 3 columns:\nx    y    z\n─────────────\n\"a\"  2.0  2.0\n\"b\"  6.0  2.0\n\nUse a NamedTuple to have different names for the summary functions:\n\njulia> summarize(@NT(m = mean, s = std), t)\n(x_m = 2.0, y_m = 1.0, x_s = 1.0, y_s = 0.0)\n\nUse select to only summarize some columns:\n\njulia> summarize(@NT(m = mean, s = std), t, select = :x)\n(m = 2.0, s = 1.0)\n\n\n\n"
+},
+
+{
+    "location": "api/aggregation.html#Summarize-1",
+    "page": "Aggregation",
+    "title": "Summarize",
+    "category": "section",
+    "text": "summarize"
+},
+
+{
     "location": "api/aggregation.html#Base.reducedim",
     "page": "Aggregation",
     "title": "Base.reducedim",
@@ -517,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Loading and Saving",
     "title": "JuliaDB.loadtable",
     "category": "Function",
-    "text": "loadtable(files::Union{AbstractVector,String}; <options>)\n\nLoad a table from CSV files.\n\nfiles is either a vector of file paths, or a directory name.\n\nOptions:\n\nindexcols::Vector – columns to use as primary key columns. (defaults to [])\ndatacols::Vector – non-indexed columns. (defaults to all columns but indexed columns)\ndistributed::Bool – should the output dataset be loaded in a distributed way? If true, this will use all available worker processes to load the data. (defaults to true if workers are available, false if not)\nchunks::Bool – number of chunks to create when loading distributed. (defaults to number of workers)\ndelim::Char – the delimiter character. (defaults to ,)\nquotechar::Char – quote character. (defaults to \")\nescapechar::Char – escape character. (defaults to \\)\nheader_exists::Bool – does header exist in the files? (defaults to true)\ncolnames::Vector{String} – specify column names for the files, use this with (header_exists=true, otherwise first row is discarded). By default column names are assumed to be present in the file.\nsamecols – a vector of tuples of strings where each tuple contains alternative names for the same column. For example, if some files have the name \"vendor_id\" and others have the name \"VendorID\", pass samecols=[(\"VendorID\", \"vendor_id\")].\ncolparsers – either a vector or dictionary of data types or an AbstractToken object from TextParse package. By default, these are inferred automatically. See type_detect_rows option below.\ntype_detect_rows: number of rows to use to infer the initial colparsers defaults to 20.\nnastrings::Vector{String} – strings that are to be considered NA. (defaults to TextParse.NA_STRINGS)\nskiplines_begin::Char – skip some lines in the beginning of each file. (doesn't skip by default)\nusecache::Bool: use cached metadata from previous loads while loading the files. Set this to false if you are changing other options.\n\n\n\n"
+    "text": "loadtable(files::Union{AbstractVector,String}; <options>)\n\nLoad a table from CSV files.\n\nfiles is either a vector of file paths, or a directory name.\n\nOptions:\n\noutput::AbstractString – directory name to write the table to. By default data is loaded directly to memory. Specifying this option will allow you to load data larger than the available memory.\nindexcols::Vector – columns to use as primary key columns. (defaults to [])\ndatacols::Vector – non-indexed columns. (defaults to all columns but indexed columns). Specify this to only load a subset of columns. In place of the name of a column, you can specify a tuple of names – this will treat any column with one of those names as the same column, but use the first name in the tuple. This is useful when the same column changes name between CSV files. (e.g. vendor_id and VendorId)\ndistributed::Bool – should the output dataset be loaded as a distributed table? If true, this will use all available worker processes to load the data. (defaults to true if workers are available, false if not)\nchunks::Bool – number of chunks to create when loading distributed. (defaults to number of workers)\ndelim::Char – the delimiter character. (defaults to ,)\nquotechar::Char – quote character. (defaults to \")\nescapechar::Char – escape character. (defaults to \\)\nheader_exists::Bool – does header exist in the files? (defaults to true)\ncolnames::Vector{String} – specify column names for the files, use this with (header_exists=false, otherwise first row is discarded). By default column names are assumed to be present in the file.\nsamecols – a vector of tuples of strings where each tuple contains alternative names for the same column. For example, if some files have the name \"vendor_id\" and others have the name \"VendorID\", pass samecols=[(\"VendorID\", \"vendor_id\")].\ncolparsers – either a vector or dictionary of data types or an AbstractToken object from TextParse package. By default, these are inferred automatically. See type_detect_rows option below.\ntype_detect_rows: number of rows to use to infer the initial colparsers defaults to 20.\nnastrings::Vector{String} – strings that are to be considered NA. (defaults to TextParse.NA_STRINGS)\nskiplines_begin::Char – skip some lines in the beginning of each file. (doesn't skip by default)\nusecache::Bool: (vestigial)\n\n\n\n"
 },
 
 {
@@ -525,7 +541,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Loading and Saving",
     "title": "JuliaDB.loadndsparse",
     "category": "Function",
-    "text": "loadndsparse(files::Union{AbstractVector,String}; <options>)\n\nLoad an NDSparse from CSV files.\n\nfiles is either a vector of file paths, or a directory name.\n\nOptions:\n\nindexcols::Vector – columns to use as indexed columns. (by default a 1:n implicit index is used.)\ndatacols::Vector – non-indexed columns. (defaults to all columns but indexed columns)\n\nAll other options are identical to those in loadtable\n\n\n\n"
+    "text": "loadndsparse(files::Union{AbstractVector,String}; <options>)\n\nLoad an NDSparse from CSV files.\n\nfiles is either a vector of file paths, or a directory name.\n\nOptions:\n\nindexcols::Vector – columns to use as indexed columns. (by default a 1:n implicit index is used.)\ndatacols::Vector – non-indexed columns. (defaults to all columns but indexed columns). Specify this to only load a subset of columns. In place of the name of a column, you can specify a tuple of names – this will treat any column with one of those names as the same column, but use the first name in the tuple. This is useful when the same column changes name between CSV files. (e.g. vendor_id and VendorId)\n\nAll other options are identical to those in loadtable\n\n\n\n"
 },
 
 {
@@ -558,6 +574,206 @@ var documenterSearchIndex = {"docs": [
     "title": "Save and Load blobs",
     "category": "section",
     "text": "saveload"
+},
+
+{
+    "location": "manual/onlinestats.html#",
+    "page": "OnlineStats Integration",
+    "title": "OnlineStats Integration",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "manual/onlinestats.html#OnlineStats-Integration-1",
+    "page": "OnlineStats Integration",
+    "title": "OnlineStats Integration",
+    "category": "section",
+    "text": "OnlineStats is a package for calculating  statistics and models with online (one observation at a time) parallelizable algorithms.   This integrates tightly with JuliaDB's distributed data structures to calculate statistics on large datasets.For the full OnlineStats documentation, see http://joshday.github.io/OnlineStats.jl/stable/."
+},
+
+{
+    "location": "manual/onlinestats.html#Basics-1",
+    "page": "OnlineStats Integration",
+    "title": "Basics",
+    "category": "section",
+    "text": "Each statistic/model is a subtype of OnlineStat.  OnlineStats are grouped together in  a Series.  In JuliaDB, the functions reduce and groupreduce can accept:An OnlineStat\nA tuple of OnlineStats\nA Series"
+},
+
+{
+    "location": "manual/onlinestats.html#Example-Table-1",
+    "page": "OnlineStats Integration",
+    "title": "Example Table",
+    "category": "section",
+    "text": "using JuliaDB, OnlineStats\n\nt = table(@NT(x = randn(100), y = randn(100), z = rand(1:5, 100)))"
+},
+
+{
+    "location": "manual/onlinestats.html#Usage-on-a-single-column-1",
+    "page": "OnlineStats Integration",
+    "title": "Usage on a single column",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "manual/onlinestats.html#reduce-via-OnlineStat-1",
+    "page": "OnlineStats Integration",
+    "title": "reduce via OnlineStat",
+    "category": "section",
+    "text": "reduce(Mean(), t; select = :x)"
+},
+
+{
+    "location": "manual/onlinestats.html#reduce-via-Tuple-of-OnlineStats-1",
+    "page": "OnlineStats Integration",
+    "title": "reduce via Tuple of OnlineStats",
+    "category": "section",
+    "text": "reduce((Mean(), Variance()), t; select = :x)"
+},
+
+{
+    "location": "manual/onlinestats.html#reduce-via-Series-1",
+    "page": "OnlineStats Integration",
+    "title": "reduce via Series",
+    "category": "section",
+    "text": "s = Series(Mean(), Variance(), Sum());\nreduce(s, t; select = :x)"
+},
+
+{
+    "location": "manual/onlinestats.html#Usage-on-multiple-columns-1",
+    "page": "OnlineStats Integration",
+    "title": "Usage on multiple columns",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "manual/onlinestats.html#Same-OnlineStat-on-each-column-1",
+    "page": "OnlineStats Integration",
+    "title": "Same OnlineStat on each column",
+    "category": "section",
+    "text": "If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. reduce(2Mean(), t; select = (:x, :y))"
+},
+
+{
+    "location": "manual/onlinestats.html#Different-OnlineStats-on-columns-1",
+    "page": "OnlineStats Integration",
+    "title": "Different OnlineStats on columns",
+    "category": "section",
+    "text": "To calculate different statistics on different columns, we need to make a Group, which can be created via hcat.s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))\n\nvalue(stats(s)[1])"
+},
+
+{
+    "location": "manual/out-of-core.html#",
+    "page": "Out-of-core functionality",
+    "title": "Out-of-core functionality",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "manual/out-of-core.html#Out-of-core-processing-1",
+    "page": "Out-of-core functionality",
+    "title": "Out-of-core processing",
+    "category": "section",
+    "text": "JuliaDB can be used to load and work with data that are too big to fit in memory (RAM). Several queries are designed to work on such datasets."
+},
+
+{
+    "location": "manual/out-of-core.html#Processing-scheme-1",
+    "page": "Out-of-core functionality",
+    "title": "Processing scheme",
+    "category": "section",
+    "text": "The basic scheme of out-of-core processing is this:Data is loaded into a distributed dataset containing \"chunks\" that are of small enough to fit in memory\nData is processed p chunks at a time – where p is the number of worker processes. This means p * size of chunks should fit in memory!\nOutput data is accumulated in-memory and must be small enough to fit in the available memory.Further, data is memory-mapped from disk so as to minimize IO overhead.Note that this processing scheme means that not all operations in JuliaDB work out-of-core. There are several operations that do work right now as described in the rest of the document. We are working to make the coverage of out-of-core operations more comprehensive."
+},
+
+{
+    "location": "manual/out-of-core.html#Loading-data-out-of-core-1",
+    "page": "Out-of-core functionality",
+    "title": "Loading data out-of-core",
+    "category": "section",
+    "text": "loadtable and loadndsparse functions take an output keyword argument which can be set to a directory where the loaded data is written to in an efficient binary format. It's also necessary to specify the chunks option to these functions which specify how many output chunks are to be generated from the input files.An example invocation may look like:loadtable(glob(\"*.csv\"), output=\"bin\", chunks=100; kwargs...)If there are, say, 1000 .csv files in the current directory, they will be read into 100 chunks (10 CSV files will be read to create a single chunk). Once a batch of 10 CSV files is read, the data is written to a single binary file in the bin directory. Now let's say you have 10 worker processes. Each process will load chunks of 10 files each, meaning the data in up to 100 files may be loaded to memory before being written to disk.Once loadtable has completed, you can load the ingested data using load:tbl = load(\"bin\")tbl is now a distributed table made of chunks which are on disk."
+},
+
+{
+    "location": "manual/out-of-core.html#reduce-operations-1",
+    "page": "Out-of-core functionality",
+    "title": "reduce operations",
+    "category": "section",
+    "text": "reduce is the most trivial out-of-core operation since it works pair-wise requiring a small, fixed amount of memory. For example, you can sum up the foo column using reduce(+, tbl, select=:foo).The OnlineStats.jl package (which is shipped with JuliaDB) allows aggregating and merging statistics on data using a small fixed amount of memory as well. For example, you can find the mean of the foo column with this code:using OnlineStats\nreduce(Mean(), tbl, select=:foo)Check out other handy OnlineStats. OnlineStats.jl also allows you to extract histograms or partitioned stats (i.e. stats on a fixed window of data, hence reducing the output size)"
+},
+
+{
+    "location": "manual/out-of-core.html#groupreduce-operations-1",
+    "page": "Out-of-core functionality",
+    "title": "groupreduce operations",
+    "category": "section",
+    "text": "groupreduce performs _grouped_ reduction. As long as the number of unique groups in the selected grouping key are small enough, groupreduce works out-of-core. groupreduce can be performed with pair-wise functions or OnlineStats, as with reduce. For example, to find the mean of foo field for every unique bar and baz pairs, you can do:using OnlineStats\ngroupreduce(Mean(), tbl, (:bar, :baz), select=:foo)Note that groupby operations may involve an expensive data shuffling step as it requires data belonging to the same group to be on the same processor, and hence isn't generally out-of-core."
+},
+
+{
+    "location": "manual/out-of-core.html#broadcast-join-operations-1",
+    "page": "Out-of-core functionality",
+    "title": "broadcast join operations",
+    "category": "section",
+    "text": "join operations have limited out-of-core support. Specifically,join(bigtable, smalltable, broadcast=:right, how=:inner|:left|:anti)Here bigtable can be larger than memory, while p copies of smalltable must fit in memory (where p is number of workers). Note that only :inner, :left, and :anti joins are supported. Notably missing is :outer join. In this operation the small table is first broadcast to all processors, and the big table is joined p chunks at a time. Hence the name \"broadcast join\"."
+},
+
+{
+    "location": "manual/ml.html#",
+    "page": "Feature Extraction",
+    "title": "Feature Extraction",
+    "category": "page",
+    "text": "CurrentModule = JuliaDB\nDocTestSetup = quote\n    using JuliaDB\n    import JuliaDB: ML\nend"
+},
+
+{
+    "location": "manual/ml.html#Feature-Extraction-1",
+    "page": "Feature Extraction",
+    "title": "Feature Extraction",
+    "category": "section",
+    "text": "Machine learning models are composed of mathematical operations on matrices of numbers. However, data in the real world is often in tabular form containing more than just numbers. Hence, the first step in applying machine learning is to turn such tabular non-numeric data into a matrix of numbers. Such matrices are called \"feature matrices\". JuliaDB contains an ML module which has helper functions to extract feature matrices.In this document, we will turn the titanic dataset from Kaggle into numeric form and apply a machine learning model on it.using JuliaDB\n\ndownload(\"https://raw.githubusercontent.com/agconti/\"*\n          \"kaggle-titanic/master/data/train.csv\", \"train.csv\")\n\ntrain_table = loadtable(\"train.csv\", escapechar='\"')\npopcol(popcol(popcol(train_table, :Name), :Ticket), :Cabin) # hide"
+},
+
+{
+    "location": "manual/ml.html#ML.schema-1",
+    "page": "Feature Extraction",
+    "title": "ML.schema",
+    "category": "section",
+    "text": "Schema is a programmatic description of the data in each column. It is a dictionary which maps each column (by name) to its schema type (mainly Continuous, and Categorical).ML.Continuous: data is drawn from the real number line (e.g. Age)\nML.Categorical: data is drawn from a fixed set of values (e.g. Sex)ML.schema(train_table) will go through the data and infer the types and distribution of data. Let's try it without any arguments on the titanic dataset:ML.schema(train_table)Here is how the schema was inferred:Numeric fields were inferred to be Continuous, their mean and standard deviations were computed. This will later be used in normalizing the column in the feature matrix using the formula ((value - mean) / standard_deviation). This will bring all columns to the same \"scale\" making the training more effective.\nSome string columns are inferred to be Categorical (e.g. Sex, Embarked) - this means that the column is a PooledArray, and is drawn from a small \"pool\" of values. For example Sex is either \"male\" or \"female\"; Embarked is one of \"Q\", \"S\", \"C\" or \"\"\nSome string columns (e.g. Name) get the schema nothing – such columns usually contain unique identifying data, so are not useful in machine learning.\nThe age column was inferred as Maybe{Continuous} – this means that there are missing values in the column. The mean and standard deviation computed are for the non-missing values.You may note that Survived column contains only 1s and 0s to denote whether a passenger survived the disaster or not. However, our schema inferred the column to be Continuous. To not be overly presumptive ML.schema will assume all numeric columns are continuous by default. We can give the hint that the Survived column is categorical by passing the hints arguemnt as a dictionary of column name to schema type. Further, we will also treat Pclass (passenger class) as categorical and suppress Parch and SibSp fields.sch = ML.schema(train_table, hints=Dict(\n        :Pclass => ML.Categorical,\n        :Survived => ML.Categorical,\n        :Parch => nothing,\n        :SibSp => nothing,\n        :Fare => nothing,\n        )\n)"
+},
+
+{
+    "location": "manual/ml.html#Split-schema-into-input-and-output-1",
+    "page": "Feature Extraction",
+    "title": "Split schema into input and output",
+    "category": "section",
+    "text": "In a machine learning model, a subset of fields act as the input to the model, and one or more fields act as the output (predicted variables). For example, in the titanic dataset, you may want to predict whether a person will survive or not. So \"Survived\" field will be the output column. Using the ML.splitschema function, you can split the schema into input and output schema.input_sch, output_sch = ML.splitschema(sch, :Survived)"
+},
+
+{
+    "location": "manual/ml.html#Extracting-feature-matrix-1",
+    "page": "Feature Extraction",
+    "title": "Extracting feature matrix",
+    "category": "section",
+    "text": "Once the schema has been created, you can extract the feature matrix according to the given schema using ML.featuremat:train_input = ML.featuremat(input_sch, train_table)train_output = ML.featuremat(output_sch, train_table)"
+},
+
+{
+    "location": "manual/ml.html#Learning-1",
+    "page": "Feature Extraction",
+    "title": "Learning",
+    "category": "section",
+    "text": "Let us create a simple neural network to learn whether a passenger will survive or not using the Flux framework.ML.width(schema) will give the number of features in the schema we will use this in specifying the model size:using Flux\n\nmodel = Chain(\n  Dense(ML.width(input_sch), 32, relu),\n  Dense(32, ML.width(output_sch)),\n  softmax)\n\nloss(x, y) = Flux.mse(model(x), y)\nopt = Flux.ADAM(Flux.params(model))\nevalcb = Flux.throttle(() -> @show(loss(first(data)...)), 2);Train the data in 10 iterationsdata = [(train_input, train_output)]\nfor i = 1:10\n  Flux.train!(loss, data, opt, cb = evalcb)\nenddata given to the model is a vector of batches of input-output matrices. In this case we are training with just 1 batch."
+},
+
+{
+    "location": "manual/ml.html#Prediction-1",
+    "page": "Feature Extraction",
+    "title": "Prediction",
+    "category": "section",
+    "text": "Now let's load some testing data to use the model we learned to predict survival.\ndownload(\"https://raw.githubusercontent.com/agconti/\"*\n          \"kaggle-titanic/master/data/test.csv\", \"test.csv\")\n\ntest_table = loadtable(\"test.csv\", escapechar='\"')\n\ntest_input = ML.featuremat(input_sch, test_table) ;Run the model on one observation:model(test_input[:, 1])The output has two numbers which add up to 1: the probability of not surviving vs that of surviving. It seems, according to our model, that this person is unlikely to survive on the titanic.You can also run the model on all observations by simply passing the whole feature matrix to model.model(test_input)"
 },
 
 ]}
