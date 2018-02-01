@@ -221,7 +221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Selection",
     "title": "Base.filter",
     "category": "Function",
-    "text": "filter(pred, t::Union{NextTable, NDSparse}; select)\n\nFilter rows in t according to pred. select choses the fields that act as input to pred.\n\npred can be:\n\nA function - selected structs or values are passed to this function\nA tuple of column => function pairs: applies to each named column the corresponding function, keeps only rows where all such conditions are satisfied.\n\nBy default, filter iterates a table a row at a time:\n\njulia> t = table([\"a\",\"b\",\"c\"], [0.01, 0.05, 0.07], [2,1,0],\n                 names=[:n, :t, :x])\nTable with 3 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"b\"  0.05  1\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t) # whole row\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\n\nBy default, filter iterates by values of an NDSparse:\n\njulia> x = ndsparse(@NT(n=[\"a\",\"b\",\"c\"], t=[0.01, 0.05, 0.07]), [2,1,0])\n2-d NDSparse with 3 values (Int64):\nn    t    │\n──────────┼──\n\"a\"  0.01 │ 2\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\njulia> filter(y->y<2, x)\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nIf select is specified. (See Selection convention) then, the selected values will be iterated instead.\n\njulia> filter(iseven, t, select=:x)\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t, select=(:x,:t))\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\nselect works similarly for NDSparse:\n\njulia> filter(p->p[2]/p[1] < 100, x, select=(:t, 3))\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nHere 3 represents the third column, which is the values, p is a tuple of t field and the value.\n\nFiltering by many single columns can be done by passing a tuple of column_name => function pairs.\n\njulia> filter((:x=>iseven, :t=>a->a>0.01), t)\nTable with 1 rows, 3 columns:\nn    t     x\n────────────\n\"c\"  0.07  0\n\njulia> filter((3=>iseven, :t=>a->a>0.01), x) # NDSparse\n2-d NDSparse with 1 values (Int64):\nn    t    │\n──────────┼──\n\"c\"  0.07 │ 0\n\n\n\n\nfilter(f, t::DNDSparse)\n\nFilters t removing rows for which f is false. f is passed only the data and not the index.\n\n\n\n"
+    "text": "filter(f, t::DNDSparse)\n\nFilters t removing rows for which f is false. f is passed only the data and not the index.\n\n\n\nfilter(pred, t::Union{NextTable, NDSparse}; select)\n\nFilter rows in t according to pred. select choses the fields that act as input to pred.\n\npred can be:\n\nA function - selected structs or values are passed to this function\nA tuple of column => function pairs: applies to each named column the corresponding function, keeps only rows where all such conditions are satisfied.\n\nBy default, filter iterates a table a row at a time:\n\njulia> t = table([\"a\",\"b\",\"c\"], [0.01, 0.05, 0.07], [2,1,0],\n                 names=[:n, :t, :x])\nTable with 3 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"b\"  0.05  1\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t) # whole row\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\n\nBy default, filter iterates by values of an NDSparse:\n\njulia> x = ndsparse(@NT(n=[\"a\",\"b\",\"c\"], t=[0.01, 0.05, 0.07]), [2,1,0])\n2-d NDSparse with 3 values (Int64):\nn    t    │\n──────────┼──\n\"a\"  0.01 │ 2\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\njulia> filter(y->y<2, x)\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nIf select is specified. (See Selection convention) then, the selected values will be iterated instead.\n\njulia> filter(iseven, t, select=:x)\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t, select=(:x,:t))\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\nselect works similarly for NDSparse:\n\njulia> filter(p->p[2]/p[1] < 100, x, select=(:t, 3))\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nHere 3 represents the third column, which is the values, p is a tuple of t field and the value.\n\nFiltering by many single columns can be done by passing a tuple of column_name => function pairs.\n\njulia> filter((:x=>iseven, :t=>a->a>0.01), t)\nTable with 1 rows, 3 columns:\nn    t     x\n────────────\n\"c\"  0.07  0\n\njulia> filter((3=>iseven, :t=>a->a>0.01), x) # NDSparse\n2-d NDSparse with 1 values (Int64):\nn    t    │\n──────────┼──\n\"c\"  0.07 │ 0\n\n\n\n\n"
 },
 
 {
@@ -533,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Loading and Saving",
     "title": "JuliaDB.loadtable",
     "category": "Function",
-    "text": "loadtable(files::Union{AbstractVector,String}; <options>)\n\nLoad a table from CSV files.\n\nfiles is either a vector of file paths, or a directory name.\n\nOptions:\n\noutput::AbstractString – directory name to write the table to. By default data is loaded directly to memory. Specifying this option will allow you to load data larger than the available memory.\nindexcols::Vector – columns to use as primary key columns. (defaults to [])\ndatacols::Vector – non-indexed columns. (defaults to all columns but indexed columns). Specify this to only load a subset of columns. In place of the name of a column, you can specify a tuple of names – this will treat any column with one of those names as the same column, but use the first name in the tuple. This is useful when the same column changes name between CSV files. (e.g. vendor_id and VendorId)\ndistributed::Bool – should the output dataset be loaded as a distributed table? If true, this will use all available worker processes to load the data. (defaults to true if workers are available, false if not)\nchunks::Bool – number of chunks to create when loading distributed. (defaults to number of workers)\ndelim::Char – the delimiter character. (defaults to ,)\nquotechar::Char – quote character. (defaults to \")\nescapechar::Char – escape character. (defaults to \\)\nheader_exists::Bool – does header exist in the files? (defaults to true)\ncolnames::Vector{String} – specify column names for the files, use this with (header_exists=false, otherwise first row is discarded). By default column names are assumed to be present in the file.\nsamecols – a vector of tuples of strings where each tuple contains alternative names for the same column. For example, if some files have the name \"vendor_id\" and others have the name \"VendorID\", pass samecols=[(\"VendorID\", \"vendor_id\")].\ncolparsers – either a vector or dictionary of data types or an AbstractToken object from TextParse package. By default, these are inferred automatically. See type_detect_rows option below.\ntype_detect_rows: number of rows to use to infer the initial colparsers defaults to 20.\nnastrings::Vector{String} – strings that are to be considered NA. (defaults to TextParse.NA_STRINGS)\nskiplines_begin::Char – skip some lines in the beginning of each file. (doesn't skip by default)\nusecache::Bool: (vestigial)\n\n\n\n"
+    "text": "loadtable(files::Union{AbstractVector,String}; <options>)\n\nLoad a table from CSV files.\n\nfiles is either a vector of file paths, or a directory name.\n\nOptions:\n\noutput::AbstractString – directory name to write the table to. By default data is loaded directly to memory. Specifying this option will allow you to load data larger than the available memory.\nindexcols::Vector – columns to use as primary key columns. (defaults to [])\ndatacols::Vector – non-indexed columns. (defaults to all columns but indexed columns). Specify this to only load a subset of columns. In place of the name of a column, you can specify a tuple of names – this will treat any column with one of those names as the same column, but use the first name in the tuple. This is useful when the same column changes name between CSV files. (e.g. vendor_id and VendorId)\ndistributed::Bool – should the output dataset be loaded as a distributed table? If true, this will use all available worker processes to load the data. (defaults to true if workers are available, false if not)\nchunks::Bool – number of chunks to create when loading distributed. (defaults to number of workers)\ndelim::Char – the delimiter character. (defaults to ,). Use spacedelim=true to split by spaces.\nspacedelim::Bool: parse space-delimited files. delim has no effect if true.\nquotechar::Char – quote character. (defaults to \")\nescapechar::Char – escape character. (defaults to \\)\nheader_exists::Bool – does header exist in the files? (defaults to true)\ncolnames::Vector{String} – specify column names for the files, use this with (header_exists=false, otherwise first row is discarded). By default column names are assumed to be present in the file.\nsamecols – a vector of tuples of strings where each tuple contains alternative names for the same column. For example, if some files have the name \"vendor_id\" and others have the name \"VendorID\", pass samecols=[(\"VendorID\", \"vendor_id\")].\ncolparsers – either a vector or dictionary of data types or an AbstractToken object from TextParse package. By default, these are inferred automatically. See type_detect_rows option below.\ntype_detect_rows: number of rows to use to infer the initial colparsers defaults to 20.\nnastrings::Vector{String} – strings that are to be considered NA. (defaults to TextParse.NA_STRINGS)\nskiplines_begin::Char – skip some lines in the beginning of each file. (doesn't skip by default)\nusecache::Bool: (vestigial)\n\n\n\n"
 },
 
 {
@@ -574,6 +574,54 @@ var documenterSearchIndex = {"docs": [
     "title": "Save and Load blobs",
     "category": "section",
     "text": "saveload"
+},
+
+{
+    "location": "api/plotting.html#",
+    "page": "Plotting",
+    "title": "Plotting",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "api/plotting.html#Plotting-1",
+    "page": "Plotting",
+    "title": "Plotting",
+    "category": "section",
+    "text": "Pkg.add(\"StatPlots\")\nusing StatPlots"
+},
+
+{
+    "location": "api/plotting.html#StatPlots-1",
+    "page": "Plotting",
+    "title": "StatPlots",
+    "category": "section",
+    "text": "JuliaDB has all access to all the power and flexibility of Plots via StatPlots and the @df macro.using JuliaDB, StatPlots\n\nt = table(@NT(x = randn(100), y = randn(100)))\n\n@df t scatter(:x, :y)\nsavefig(\"statplot.png\"); nothing # hide(Image: )"
+},
+
+{
+    "location": "api/plotting.html#JuliaDB.partitionplot",
+    "page": "Plotting",
+    "title": "JuliaDB.partitionplot",
+    "category": "Function",
+    "text": "partitionplot(table, y;    stat=Extrema(), nparts=100, by=nothing)\npartitionplot(table, x, y; stat=Extrema(), nparts=100, by=nothing)\n\nPlot a summary of variable y against x (1:length(y) if not specified).  Using nparts approximately-equal sections along the x-axis, the data in y over each section is  summarized by stat. \n\n\n\n"
+},
+
+{
+    "location": "api/plotting.html#partitionplot-1",
+    "page": "Plotting",
+    "title": "partitionplot",
+    "category": "section",
+    "text": "partitionplot"
+},
+
+{
+    "location": "api/plotting.html#Examples-1",
+    "page": "Plotting",
+    "title": "Examples",
+    "category": "section",
+    "text": "using JuliaDB, Plots, OnlineStats\n\nx = randn(10^6)\ny = x + randn(10^6)\nz = x .> 0\nt = table(@NT(x=x, y=y, z=z))\n\n# x by itself\npartitionplot(t, :x, stat = Extrema())\nsavefig(\"plot1.png\"); nothing # hide(Image: )# y by x\npartitionplot(t, :x, :y, stat = Hist(25))\nsavefig(\"plot2.png\"); nothing # hide(Image: )# y by x, grouped by z\npartitionplot(t, :x, :y, stat = Extrema(), by = z)\nsavefig(\"plot3.png\"); nothing # hide(Image: )"
 },
 
 {
