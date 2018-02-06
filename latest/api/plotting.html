@@ -3,13 +3,8 @@
 
 t = table(@NT(x = randn(100), y = randn(100)))
 
-@df t scatter(:x, :y)</code></pre><pre><code class="language-none">GKS: can&#39;t open display on &quot;&quot;
-     Is your DISPLAY environment variable set correctly?
-     Did you enable X11 and TCP forwarding?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre></div><p><img src="statplot.png" alt/></p><h2><a class="nav-anchor" id="partitionplot-1" href="#partitionplot-1"><code>partitionplot</code></a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="JuliaDB.partitionplot" href="#JuliaDB.partitionplot"><code>JuliaDB.partitionplot</code></a> — <span class="docstring-category">Function</span>.</div><div><pre><code class="language-none">partitionplot(table, y;    stat=Extrema(), nparts=100, by=nothing, dropmissing=false)
-partitionplot(table, x, y; stat=Extrema(), nparts=100, by=nothing, dropmissing=false)</code></pre><p>Plot a summary of variable <code>y</code> against <code>x</code> (<code>1:length(y)</code> if not specified).  Using <code>nparts</code> approximately-equal sections along the x-axis, the data in <code>y</code> over each section is  summarized by <code>stat</code>. </p></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/JuliaDB.jl/blob/45850324dcbe55c729fa4d6bdab9152bfbe1c980/src/recipes.jl#L55-L62">source</a></section><h3><a class="nav-anchor" id="Examples-1" href="#Examples-1">Examples</a></h3><div><pre><code class="language-julia">using JuliaDB, Plots, OnlineStats
+@df t scatter(:x, :y)</code></pre></div><p><img src="statplot.png" alt/></p><h2><a class="nav-anchor" id="partitionplot-1" href="#partitionplot-1"><code>partitionplot</code></a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="JuliaDB.partitionplot" href="#JuliaDB.partitionplot"><code>JuliaDB.partitionplot</code></a> — <span class="docstring-category">Function</span>.</div><div><pre><code class="language-none">partitionplot(table, y;    stat=Extrema(), nparts=100, by=nothing, dropmissing=false)
+partitionplot(table, x, y; stat=Extrema(), nparts=100, by=nothing, dropmissing=false)</code></pre><p>Plot a summary of variable <code>y</code> against <code>x</code> (<code>1:length(y)</code> if not specified).  Using <code>nparts</code> approximately-equal sections along the x-axis, the data in <code>y</code> over each section is  summarized by <code>stat</code>. </p></div><a class="source-link" target="_blank" href="https://github.com/JuliaComputing/JuliaDB.jl/blob/f02cc83ac89e640991d286200b8f34302899c2f1/src/recipes.jl#L55-L62">source</a></section><h3><a class="nav-anchor" id="Examples-1" href="#Examples-1">Examples</a></h3><div><pre><code class="language-julia">using JuliaDB, Plots, OnlineStats
 
 x = randn(10^6)
 y = x + randn(10^6)
@@ -17,21 +12,6 @@ z = x .&gt; 0
 t = table(@NT(x=x, y=y, z=z))
 
 # x by itself
-partitionplot(t, :x, stat = Extrema())</code></pre><pre><code class="language-none">GKS: can&#39;t open display on &quot;&quot;
-     Is your DISPLAY environment variable set correctly?
-     Did you enable X11 and TCP forwarding?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre></div><p><img src="plot1.png" alt/></p><div><pre><code class="language-julia"># y by x
-partitionplot(t, :x, :y, stat = Hist(25))</code></pre><pre><code class="language-none">GKS: can&#39;t open display on &quot;&quot;
-     Is your DISPLAY environment variable set correctly?
-     Did you enable X11 and TCP forwarding?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre></div><p><img src="plot2.png" alt/></p><div><pre><code class="language-julia"># y by x, grouped by z
-partitionplot(t, :x, :y, stat = Extrema(), by = z)</code></pre><pre><code class="language-none">GKS: can&#39;t open display on &quot;&quot;
-     Is your DISPLAY environment variable set correctly?
-     Did you enable X11 and TCP forwarding?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre></div><p><img src="plot3.png" alt/></p><footer><hr/><a class="previous" href="io.html"><span class="direction">Previous</span><span class="title">Loading and Saving</span></a><a class="next" href="../manual/onlinestats.html"><span class="direction">Next</span><span class="title">OnlineStats Integration</span></a></footer></article></body></html>
+partitionplot(t, :x, stat = Extrema())</code></pre></div><p><img src="plot1.png" alt/></p><div><pre><code class="language-julia"># y by x
+partitionplot(t, :x, :y, stat = Hist(25))</code></pre></div><p><img src="plot2.png" alt/></p><div><pre><code class="language-julia"># y by x, grouped by z
+partitionplot(t, :x, :y, stat = Extrema(), by = z)</code></pre></div><p><img src="plot3.png" alt/></p><footer><hr/><a class="previous" href="io.html"><span class="direction">Previous</span><span class="title">Loading and Saving</span></a><a class="next" href="../manual/onlinestats.html"><span class="direction">Next</span><span class="title">OnlineStats Integration</span></a></footer></article></body></html>
