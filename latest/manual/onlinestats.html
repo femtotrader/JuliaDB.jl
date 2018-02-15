@@ -3,47 +3,47 @@
 
 julia&gt; t = table(@NT(x = randn(100), y = randn(100), z = rand(1:5, 100)))
 Table with 100 rows, 3 columns:
-x          y           z
-────────────────────────
--0.61195   0.722427    2
-0.148582   -0.218794   5
-0.664318   -1.04041    3
--1.39791   -1.79157    5
--0.822106  0.688391    1
-0.519343   2.16053     1
-0.142675   2.39499     3
--0.863363  -0.179062   3
--0.162979  -0.0383259  4
+x           y           z
+─────────────────────────
+0.697982    1.4635      5
+-1.13379    0.00710047  5
+-0.367412   -1.09008    3
+0.242516    -0.5419     3
+-0.0570904  -0.974143   3
+-0.519146   0.621611    2
+-1.00036    -1.5652     2
+-0.366709   -1.41836    2
+-0.208919   0.784429    1
 ⋮
-0.0454192  -1.1568     1
--1.04241   -0.558009   4
--0.754193  -2.15349    1
--1.23303   -0.0862896  5
--0.112946  0.369134    5
--0.353931  -0.957698   1
--0.581246  -1.3614     3
--0.634077  -0.219619   1</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
+-0.243197   0.240142    3
+1.12038     -0.856895   1
+-0.308186   -0.755907   4
+-0.275675   0.116583    5
+-1.93466    0.42902     5
+-1.09034    -1.55237    3
+0.377053    0.29142     4
+-1.35681    0.400424    5</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
 ▦ Series{0}
 │ EqualWeight | nobs=100
-└── Mean(-0.114058)</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
+└── Mean(0.0503204)</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
 (Mean = ▦ Series{0}
 │ EqualWeight | nobs=100
-└── Mean(-0.114058), Variance = ▦ Series{0}
+└── Mean(0.0503204), Variance = ▦ Series{0}
 │ EqualWeight | nobs=100
-└── Variance(1.10446))</code></pre><h3><a class="nav-anchor" id="reduce-via-Series-1" href="#reduce-via-Series-1"><code>reduce</code> via <code>Series</code></a></h3><pre><code class="language-julia-repl">julia&gt; s = Series(Mean(), Variance(), Sum());
+└── Variance(0.870087))</code></pre><h3><a class="nav-anchor" id="reduce-via-Series-1" href="#reduce-via-Series-1"><code>reduce</code> via <code>Series</code></a></h3><pre><code class="language-julia-repl">julia&gt; s = Series(Mean(), Variance(), Sum());
 
 julia&gt; reduce(s, t; select = :x)
 ▦ Series{0}
 │ EqualWeight | nobs=100
-├── Mean(-0.114058)
-├── Variance(1.10446)
-└── Sum{Float64}(-11.4058)</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><h3><a class="nav-anchor" id="Same-OnlineStat-on-each-column-1" href="#Same-OnlineStat-on-each-column-1">Same <code>OnlineStat</code> on each column</a></h3><p>If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. </p><pre><code class="language-julia-repl">julia&gt; reduce(2Mean(), t; select = (:x, :y))
+├── Mean(0.0503204)
+├── Variance(0.870087)
+└── Sum{Float64}(5.03204)</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><h3><a class="nav-anchor" id="Same-OnlineStat-on-each-column-1" href="#Same-OnlineStat-on-each-column-1">Same <code>OnlineStat</code> on each column</a></h3><p>If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. </p><pre><code class="language-julia-repl">julia&gt; reduce(2Mean(), t; select = (:x, :y))
 ▦ Series{1}
 │ EqualWeight | nobs=100
-└── MV{Mean}(-0.11405799640707537, -0.10335200520436993)</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
+└── MV{Mean}(0.0503203558013535, 0.034097795914104743)</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
 ▦ Series{1}
 │ EqualWeight | nobs=100
 └── Group : (&quot;Mean&quot;, &quot;CountMap&quot;)
 
 julia&gt; value(stats(s)[1])
-(-0.11405799640707537, Dict(4=&gt;27,2=&gt;17,3=&gt;15,5=&gt;19,1=&gt;22))</code></pre><footer><hr/><a class="previous" href="../api/plotting.html"><span class="direction">Previous</span><span class="title">Plotting</span></a><a class="next" href="out-of-core.html"><span class="direction">Next</span><span class="title">Out-of-core functionality</span></a></footer></article></body></html>
+(0.0503203558013535, Dict(4=&gt;20,2=&gt;19,3=&gt;19,5=&gt;24,1=&gt;18))</code></pre><footer><hr/><a class="previous" href="../api/plotting.html"><span class="direction">Previous</span><span class="title">Plotting</span></a><a class="next" href="out-of-core.html"><span class="direction">Next</span><span class="title">Out-of-core functionality</span></a></footer></article></body></html>
