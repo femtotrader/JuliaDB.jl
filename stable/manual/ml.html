@@ -6,7 +6,7 @@ download(&quot;https://raw.githubusercontent.com/agconti/&quot;*
 
 train_table = loadtable(&quot;train.csv&quot;, escapechar=&#39;&quot;&#39;)</code></pre><pre><code class="language-none">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 60302  100 60302    0     0  3583k      0 --:--:-- --:--:-- --:--:-- 3680k
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 60302  100 60302    0     0   148k      0 --:--:-- --:--:-- --:--:--  149k
 Table with 891 rows, 9 columns:
 PassengerId  Survived  Pclass  Sex       Age   SibSp  Parch  Fare     Embarked
 ──────────────────────────────────────────────────────────────────────────────
@@ -91,4 +91,4 @@ test_table = loadtable(&quot;test.csv&quot;, escapechar=&#39;&quot;&#39;)
 
 test_input = ML.featuremat(input_sch, test_table) ;</code></pre><pre><code class="language-none">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 28210  100 28210    0     0   204k      0 --:--:-- --:--:-- --:--:--  205k</code></pre></div><p>Run the model on one observation:</p><pre><code class="language-">model(test_input[:, 1])</code></pre><p>The output has two numbers which add up to 1: the probability of not surviving vs that of surviving. It seems, according to our model, that this person is unlikely to survive on the titanic.</p><p>You can also run the model on all observations by simply passing the whole feature matrix to <code>model</code>.</p><pre><code class="language-">model(test_input)</code></pre><footer><hr/><a class="previous" href="out-of-core.html"><span class="direction">Previous</span><span class="title">Out-of-core functionality</span></a></footer></article></body></html>
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 28210  100 28210    0     0   391k      0 --:--:-- --:--:-- --:--:--  393k</code></pre></div><p>Run the model on one observation:</p><pre><code class="language-">model(test_input[:, 1])</code></pre><p>The output has two numbers which add up to 1: the probability of not surviving vs that of surviving. It seems, according to our model, that this person is unlikely to survive on the titanic.</p><p>You can also run the model on all observations by simply passing the whole feature matrix to <code>model</code>.</p><pre><code class="language-">model(test_input)</code></pre><footer><hr/><a class="previous" href="out-of-core.html"><span class="direction">Previous</span><span class="title">Out-of-core functionality</span></a></footer></article></body></html>
