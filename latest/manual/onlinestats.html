@@ -1,49 +1,49 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>OnlineStats Integration · JuliaDB</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../assets/custom.css" rel="stylesheet" type="text/css"/><script src="../assets/custom.js"></script></head><body><nav class="toc"><h1>JuliaDB</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../index.html">Home</a></li><li><a class="toctext" href="../api/index.html">API Reference</a></li><li><a class="toctext" href="../api/datastructures.html">Data Structures</a></li><li><a class="toctext" href="../api/selection.html">Selection</a></li><li><a class="toctext" href="../api/aggregation.html">Aggregation</a></li><li><a class="toctext" href="../api/joins.html">Joins</a></li><li><a class="toctext" href="../api/io.html">Loading and Saving</a></li><li><a class="toctext" href="../api/plotting.html">Plotting</a></li><li class="current"><a class="toctext" href="onlinestats.html">OnlineStats Integration</a><ul class="internal"><li><a class="toctext" href="#Basics-1">Basics</a></li><li><a class="toctext" href="#Usage-on-a-single-column-1">Usage on a single column</a></li><li><a class="toctext" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></li></ul></li><li><a class="toctext" href="out-of-core.html">Out-of-core functionality</a></li><li><a class="toctext" href="ml.html">Feature Extraction</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="onlinestats.html">OnlineStats Integration</a></li></ul><a class="edit-page" href="https://github.com/JuliaComputing/JuliaDB.jl/blob/master/docs/src/manual/onlinestats.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>OnlineStats Integration</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="OnlineStats-Integration-1" href="#OnlineStats-Integration-1">OnlineStats Integration</a></h1><p><a href="https://github.com/joshday/OnlineStats.jl"><strong>OnlineStats</strong></a> is a package for calculating  statistics and models with online (one observation at a time) parallelizable algorithms.   This integrates tightly with JuliaDB&#39;s distributed data structures to calculate statistics on large datasets.</p><p>For the full OnlineStats documentation, see <a href="http://joshday.github.io/OnlineStats.jl/stable/">http://joshday.github.io/OnlineStats.jl/stable/</a>.</p><hr/><h2><a class="nav-anchor" id="Basics-1" href="#Basics-1">Basics</a></h2><p>Each statistic/model is a subtype of <code>OnlineStat</code>.  <code>OnlineStat</code>s are grouped together in  a <code>Series</code>.  In JuliaDB, the functions <a href="../api/aggregation.html#Base.reduce"><code>reduce</code></a> and <a href="../api/aggregation.html#IndexedTables.groupreduce"><code>groupreduce</code></a> can accept:</p><ol><li><p>An <code>OnlineStat</code></p></li><li><p>A tuple of <code>OnlineStat</code>s</p></li><li><p>A <code>Series</code></p></li></ol><h3><a class="nav-anchor" id="Example-Table-1" href="#Example-Table-1">Example Table</a></h3><pre><code class="language-julia-repl">julia&gt; using JuliaDB, OnlineStats
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>OnlineStats Integration · JuliaDB</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/><link href="../assets/custom.css" rel="stylesheet" type="text/css"/><script src="../assets/custom.js"></script></head><body><nav class="toc"><h1>JuliaDB</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../index.html">Home</a></li><li><a class="toctext" href="../api/index.html">API Reference</a></li><li><a class="toctext" href="../api/datastructures.html">Data Structures</a></li><li><a class="toctext" href="../api/selection.html">Selection</a></li><li><a class="toctext" href="../api/aggregation.html">Aggregation</a></li><li><a class="toctext" href="../api/joins.html">Joins</a></li><li><a class="toctext" href="../api/reshaping.html">Reshaping</a></li><li><a class="toctext" href="../api/io.html">Loading and Saving</a></li><li><a class="toctext" href="../api/plotting.html">Plotting</a></li><li class="current"><a class="toctext" href="onlinestats.html">OnlineStats Integration</a><ul class="internal"><li><a class="toctext" href="#Basics-1">Basics</a></li><li><a class="toctext" href="#Usage-on-a-single-column-1">Usage on a single column</a></li><li><a class="toctext" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></li></ul></li><li><a class="toctext" href="out-of-core.html">Out-of-core functionality</a></li><li><a class="toctext" href="ml.html">Feature Extraction</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="onlinestats.html">OnlineStats Integration</a></li></ul><a class="edit-page" href="https://github.com/JuliaComputing/JuliaDB.jl/blob/master/docs/src/manual/onlinestats.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>OnlineStats Integration</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="OnlineStats-Integration-1" href="#OnlineStats-Integration-1">OnlineStats Integration</a></h1><p><a href="https://github.com/joshday/OnlineStats.jl"><strong>OnlineStats</strong></a> is a package for calculating  statistics and models with online (one observation at a time) parallelizable algorithms.   This integrates tightly with JuliaDB&#39;s distributed data structures to calculate statistics on large datasets.</p><p>For the full OnlineStats documentation, see <a href="http://joshday.github.io/OnlineStats.jl/stable/">http://joshday.github.io/OnlineStats.jl/stable/</a>.</p><hr/><h2><a class="nav-anchor" id="Basics-1" href="#Basics-1">Basics</a></h2><p>Each statistic/model is a subtype of <code>OnlineStat</code>.  <code>OnlineStat</code>s are grouped together in  a <code>Series</code>.  In JuliaDB, the functions <a href="../api/aggregation.html#Base.reduce"><code>reduce</code></a> and <a href="../api/aggregation.html#IndexedTables.groupreduce"><code>groupreduce</code></a> can accept:</p><ol><li><p>An <code>OnlineStat</code></p></li><li><p>A tuple of <code>OnlineStat</code>s</p></li><li><p>A <code>Series</code></p></li></ol><h3><a class="nav-anchor" id="Example-Table-1" href="#Example-Table-1">Example Table</a></h3><pre><code class="language-julia-repl">julia&gt; using JuliaDB, OnlineStats
 
 julia&gt; t = table(@NT(x = randn(100), y = randn(100), z = rand(1:5, 100)))
 Table with 100 rows, 3 columns:
-x          y           z
-────────────────────────
-1.36743    -1.15193    2
--0.610676  1.25341     5
--0.176453  -0.706049   3
-1.35829    0.0677122   5
--1.66872   0.39345     2
-0.532365   0.474872    5
--1.783     -0.560839   5
--0.507853  -1.93254    5
-0.847749   0.00450966  4
+x           y           z
+─────────────────────────
+1.18684     1.17903     2
+-0.535716   -0.318013   3
+-0.701655   -0.399028   4
+0.298702    1.27787     2
+-1.24908    0.402239    2
+-0.782859   0.025135    3
+-0.732699   -0.747954   5
+1.16055     -2.16913    5
+1.63578     0.883038    2
 ⋮
--1.65741   -0.827195   4
-1.32508    0.477213    4
-0.767468   -0.433348   4
--1.39026   0.0366659   3
--0.066484  0.195349    4
--2.08575   0.523916    1
-1.67873    1.1637      4
--0.149633  0.581429    2</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
+0.899956    -0.368518   4
+0.0559326   -0.0750285  1
+0.445233    1.03415     5
+-0.0201247  0.583587    5
+-0.324197   -0.380029   4
+1.13097     -0.307486   2
+0.487673    -1.38397    4
+-0.382193   -0.498915   1</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
 ▦ Series{0}
 │ EqualWeight | nobs=100
-└── Mean(-0.198072)</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
+└── Mean(0.00262301)</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
 (Mean = ▦ Series{0}
 │ EqualWeight | nobs=100
-└── Mean(-0.198072), Variance = ▦ Series{0}
+└── Mean(0.00262301), Variance = ▦ Series{0}
 │ EqualWeight | nobs=100
-└── Variance(1.10737))</code></pre><h3><a class="nav-anchor" id="reduce-via-Series-1" href="#reduce-via-Series-1"><code>reduce</code> via <code>Series</code></a></h3><pre><code class="language-julia-repl">julia&gt; s = Series(Mean(), Variance(), Sum());
+└── Variance(0.810734))</code></pre><h3><a class="nav-anchor" id="reduce-via-Series-1" href="#reduce-via-Series-1"><code>reduce</code> via <code>Series</code></a></h3><pre><code class="language-julia-repl">julia&gt; s = Series(Mean(), Variance(), Sum());
 
 julia&gt; reduce(s, t; select = :x)
 ▦ Series{0}
 │ EqualWeight | nobs=100
-├── Mean(-0.198072)
-├── Variance(1.10737)
-└── Sum{Float64}(-19.8072)</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><h3><a class="nav-anchor" id="Same-OnlineStat-on-each-column-1" href="#Same-OnlineStat-on-each-column-1">Same <code>OnlineStat</code> on each column</a></h3><p>If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. </p><pre><code class="language-julia-repl">julia&gt; reduce(2Mean(), t; select = (:x, :y))
+├── Mean(0.00262301)
+├── Variance(0.810734)
+└── Sum{Float64}(0.262301)</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><h3><a class="nav-anchor" id="Same-OnlineStat-on-each-column-1" href="#Same-OnlineStat-on-each-column-1">Same <code>OnlineStat</code> on each column</a></h3><p>If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. </p><pre><code class="language-julia-repl">julia&gt; reduce(2Mean(), t; select = (:x, :y))
 ▦ Series{1}
 │ EqualWeight | nobs=100
-└── MV{Mean}(-0.19807176245321068, -0.003812113908406577)</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
+└── MV{Mean}(0.002623005629611025, -0.09953146217888427)</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
 ▦ Series{1}
 │ EqualWeight | nobs=100
 └── Group : (&quot;Mean&quot;, &quot;CountMap&quot;)
 
 julia&gt; value(stats(s)[1])
-(-0.19807176245321068, Dict(4=&gt;22,2=&gt;17,3=&gt;22,5=&gt;25,1=&gt;14))</code></pre><footer><hr/><a class="previous" href="../api/plotting.html"><span class="direction">Previous</span><span class="title">Plotting</span></a><a class="next" href="out-of-core.html"><span class="direction">Next</span><span class="title">Out-of-core functionality</span></a></footer></article></body></html>
+(0.002623005629611025, Dict(4=&gt;16,2=&gt;18,3=&gt;25,5=&gt;25,1=&gt;16))</code></pre><footer><hr/><a class="previous" href="../api/plotting.html"><span class="direction">Previous</span><span class="title">Plotting</span></a><a class="next" href="out-of-core.html"><span class="direction">Next</span><span class="title">Out-of-core functionality</span></a></footer></article></body></html>

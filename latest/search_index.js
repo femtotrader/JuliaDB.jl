@@ -89,6 +89,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "api/index.html#[Reshaping](@ref)-1",
+    "page": "API Reference",
+    "title": "Reshaping",
+    "category": "section",
+    "text": "Reshape a table.stack - reshape a table from the wide to the long format\nunstack - Reshape a table from the long to the wide format"
+},
+
+{
     "location": "api/index.html#[Loading-and-saving](@ref)-1",
     "page": "API Reference",
     "title": "Loading and saving",
@@ -437,7 +445,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Aggregation",
     "title": "IndexedTables.flatten",
     "category": "function",
-    "text": "flatten(t::Table, col)\n\nFlatten col column which may contain a vector of vectors while repeating the other fields.\n\nExamples:\n\njulia> x = table([1,2], [[3,4], [5,6]], names=[:x, :y])\nTable with 2 rows, 2 columns:\nx  y\n─────────\n1  [3, 4]\n2  [5, 6]\n\njulia> flatten(x, 2)\nTable with 4 rows, 2 columns:\nx  y\n────\n1  3\n1  4\n2  5\n2  6\n\njulia> x = table([1,2], [table([3,4],[5,6], names=[:a,:b]),\n                         table([7,8], [9,10], names=[:a,:b])], names=[:x, :y]);\n\njulia> flatten(x, :y)\nTable with 4 rows, 3 columns:\nx  a  b\n────────\n1  3  5\n1  4  6\n2  7  9\n2  8  10\n\n\n\n"
+    "text": "flatten(t::Table, col=length(columns(t)))\n\nFlatten col column which may contain a vector of vectors while repeating the other fields. If column argument is not provided, default to last column.\n\nExamples:\n\njulia> x = table([1,2], [[3,4], [5,6]], names=[:x, :y])\nTable with 2 rows, 2 columns:\nx  y\n─────────\n1  [3, 4]\n2  [5, 6]\n\njulia> flatten(x, 2)\nTable with 4 rows, 2 columns:\nx  y\n────\n1  3\n1  4\n2  5\n2  6\n\njulia> x = table([1,2], [table([3,4],[5,6], names=[:a,:b]),\n                         table([7,8], [9,10], names=[:a,:b])], names=[:x, :y]);\n\njulia> flatten(x, :y)\nTable with 4 rows, 3 columns:\nx  a  b\n────────\n1  3  5\n1  4  6\n2  7  9\n2  8  10\n\n\n\n"
 },
 
 {
@@ -501,7 +509,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Joins",
     "title": "IndexedTables.groupjoin",
     "category": "function",
-    "text": "groupjoin([f, ] left, right; how, <options>)\n\nJoin left and right creating groups of values with matching keys.\n\nInner join\n\nInner join is the default join (when how is unspecified). It looks up keys from left in right and only joins them when there is a match. This generates the \"intersection\" of keys from left and right.\n\nOne-to-many and many-to-many matches\n\nIf the same key appears multiple times in either table (say, m and n times respectively), each row with a key from left is matched with each row from right with that key. The resulting group has m×n output elements.\n\njulia> l = table([1,1,1,2], [1,2,2,1], [1,2,3,4],\n                 names=[:a,:b,:c], pkey=(:a, :b))\nTable with 4 rows, 3 columns:\na  b  c\n───────\n1  1  1\n1  2  2\n1  2  3\n2  1  4\n\njulia> r = table([0,1,1,2], [1,2,2,1], [1,2,3,4],\n                 names=[:a,:b,:d], pkey=(:a, :b))\nTable with 4 rows, 3 columns:\na  b  d\n───────\n0  1  1\n1  2  2\n1  2  3\n2  1  4\n\njulia> groupjoin(l,r)\nTable with 2 rows, 3 columns:\na  b  groups\n──────────────────────────────────────────────────────────────────────────────────────────────────────\n1  2  NamedTuples._NT_c_d{Int64,Int64}[(c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  1  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\nLeft join\n\nLeft join looks up rows from right where keys match that in left. If there are no such rows in right, an NA value is used for every selected field from right.\n\njulia> groupjoin(l,r, how=:left)\nTable with 3 rows, 3 columns:\na  b  groups\n──────────────────────────────────────────────────────────────────────────────────────────────────────\n1  1  NamedTuples._NT_c_d{Int64,Int64}[]\n1  2  NamedTuples._NT_c_d{Int64,Int64}[(c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  1  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\nOuter join\n\nOuter (aka Union) join looks up rows from right where keys match that in left, and also rows from left where keys match those in left, if there are no matches on either side, a tuple of NA values is used. The output is guarranteed to contain \n\n\njulia> groupjoin(l,r, how=:outer)\nTable with 4 rows, 3 columns:\na  b  groups\n──────────────────────────────────────────────────────────────────────────────────────────────────────\n0  1  NamedTuples._NT_c_d{Int64,Int64}[]\n1  1  NamedTuples._NT_c_d{Int64,Int64}[]\n1  2  NamedTuples._NT_c_d{Int64,Int64}[(c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  1  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\nOptions\n\nhow::Symbol – join method to use. Described above.\nlkey::Selection – fields from left to match on\nrkey::Selection – fields from right to match on\nlselect::Selection – fields from left to use as input to use as output columns, or input to f if it is specified. By default, this is all fields not selected in lkey.\nrselect::Selection – fields from left to use as input to use as output columns, or input to f if it is specified. By default, this is all fields not selected in rkey.\n\njulia> groupjoin(l,r, lkey=:a, rkey=:a, lselect=:c, rselect=:d, how=:outer)\nTable with 3 rows, 2 columns:\na  groups\n───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n0  NamedTuples._NT_c_d{Int64,Int64}[]\n1  NamedTuples._NT_c_d{Int64,Int64}[(c = 1, d = 2), (c = 1, d = 3), (c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\n\n\n"
+    "text": "groupjoin([f, ] left, right; how, <options>)\n\nJoin left and right creating groups of values with matching keys.\n\nInner join\n\nInner join is the default join (when how is unspecified). It looks up keys from left in right and only joins them when there is a match. This generates the \"intersection\" of keys from left and right.\n\nOne-to-many and many-to-many matches\n\nIf the same key appears multiple times in either table (say, m and n times respectively), each row with a key from left is matched with each row from right with that key. The resulting group has m×n output elements.\n\njulia> l = table([1,1,1,2], [1,2,2,1], [1,2,3,4],\n                 names=[:a,:b,:c], pkey=(:a, :b))\nTable with 4 rows, 3 columns:\na  b  c\n───────\n1  1  1\n1  2  2\n1  2  3\n2  1  4\n\njulia> r = table([0,1,1,2], [1,2,2,1], [1,2,3,4],\n                 names=[:a,:b,:d], pkey=(:a, :b))\nTable with 4 rows, 3 columns:\na  b  d\n───────\n0  1  1\n1  2  2\n1  2  3\n2  1  4\n\njulia> groupjoin(l,r)\nTable with 2 rows, 3 columns:\na  b  groups\n──────────────────────────────────────────────────────────────────────────────────────────────────────\n1  2  NamedTuples._NT_c_d{Int64,Int64}[(c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  1  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\nLeft join\n\nLeft join looks up rows from right where keys match that in left. If there are no such rows in right, an NA value is used for every selected field from right.\n\njulia> groupjoin(l,r, how=:left)\nTable with 3 rows, 3 columns:\na  b  groups\n──────────────────────────────────────────────────────────────────────────────────────────────────────\n1  1  NamedTuples._NT_c_d{Int64,Int64}[]\n1  2  NamedTuples._NT_c_d{Int64,Int64}[(c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  1  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\nOuter join\n\nOuter (aka Union) join looks up rows from right where keys match that in left, and also rows from left where keys match those in left, if there are no matches on either side, a tuple of NA values is used. The output is guarranteed to contain\n\n\njulia> groupjoin(l,r, how=:outer)\nTable with 4 rows, 3 columns:\na  b  groups\n──────────────────────────────────────────────────────────────────────────────────────────────────────\n0  1  NamedTuples._NT_c_d{Int64,Int64}[]\n1  1  NamedTuples._NT_c_d{Int64,Int64}[]\n1  2  NamedTuples._NT_c_d{Int64,Int64}[(c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  1  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\nOptions\n\nhow::Symbol – join method to use. Described above.\nlkey::Selection – fields from left to match on\nrkey::Selection – fields from right to match on\nlselect::Selection – fields from left to use as input to use as output columns, or input to f if it is specified. By default, this is all fields not selected in lkey.\nrselect::Selection – fields from left to use as input to use as output columns, or input to f if it is specified. By default, this is all fields not selected in rkey.\n\njulia> groupjoin(l,r, lkey=:a, rkey=:a, lselect=:c, rselect=:d, how=:outer)\nTable with 3 rows, 2 columns:\na  groups\n───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n0  NamedTuples._NT_c_d{Int64,Int64}[]\n1  NamedTuples._NT_c_d{Int64,Int64}[(c = 1, d = 2), (c = 1, d = 3), (c = 2, d = 2), (c = 2, d = 3), (c = 3, d = 2), (c = 3, d = 3)]\n2  NamedTuples._NT_c_d{Int64,Int64}[(c = 4, d = 4)]\n\n\n\n"
 },
 
 {
@@ -525,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Joins",
     "title": "Base.merge",
     "category": "function",
-    "text": "Merge two NamedTuples favoring the lhs Order is preserved lhs names come first. This copies the underlying data.\n\n\n\nmerge(a::Union{Table, NDSparse}, a::Union{Table, NDSparse})\n\nMerge rows from two datasets while keeping them ordered by primary keys.\n\nExamples:\n\njulia> a = table([1,3,5], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n1  1\n3  2\n5  3\n\njulia> b = table([2,3,4], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n2  1\n3  2\n4  3\n\njulia> merge(a,b)\nTable with 6 rows, 2 columns:\nx  y\n────\n1  1\n2  1\n3  2\n3  2\n4  3\n5  3\n\n\nWhen merging two NDSparse objects, if the same key is present in both inputs, the value from the second input is chosen.\n\njulia> a = ndsparse([1,3,5], [1,2,3]);\n\njulia> b = ndsparse([2,3,4], [1,2,3]);\n\njulia> merge(a,b)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 2\n4 │ 3\n5 │ 3\n\n\nHowever, you can pass the agg keyword argument to combine the values with a custom function.\n\njulia> merge(a,b,agg=+)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 4\n4 │ 3\n5 │ 3\n\n\n\n"
+    "text": "Merge two NamedTuples favoring the lhs Order is preserved lhs names come first. This copies the underlying data.\n\n\n\nmerge(a::Table, a::Table; pkey)\n\nMerge rows from two datasets while keeping them ordered by primary keys (pkey). By default, if the tables have the same primary key columns in the same order, they will be used. Otherwise no primary key will be used. The tables must have the same column names. If they are not in the same order, the order from the first table will be used.\n\nExamples:\n\njulia> a = table([1,3,5], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n1  1\n3  2\n5  3\n\njulia> b = table([2,3,4], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n2  1\n3  2\n4  3\n\njulia> merge(a,b)\nTable with 6 rows, 2 columns:\nx  y\n────\n1  1\n2  1\n3  2\n3  2\n4  3\n5  3\n\n\nmerge(a::NDSparse, a::NDSparse; agg)\n\nMerge rows from two NDSparse objects. To keep unique keys, if a key is present in both inputs, the value from the second input is chosen. You can pass the agg keyword argument to combine the values with a custom function.\n\njulia> a = ndsparse([1,3,5], [1,2,3]);\n\njulia> b = ndsparse([2,3,4], [1,2,3]);\n\njulia> merge(a,b)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 2\n4 │ 3\n5 │ 3\n\njulia> merge(a,b,agg=+)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 4\n4 │ 3\n5 │ 3\n\n\n\n"
 },
 
 {
@@ -550,6 +558,38 @@ var documenterSearchIndex = {"docs": [
     "title": "Broadcast",
     "category": "section",
     "text": "broadcast(f::Function, A::NDSparse, B::NDSparse)"
+},
+
+{
+    "location": "api/reshaping.html#",
+    "page": "Reshaping",
+    "title": "Reshaping",
+    "category": "page",
+    "text": "CurrentModule = JuliaDB\nDocTestSetup = quote\n    using JuliaDB\nend"
+},
+
+{
+    "location": "api/reshaping.html#IndexedTables.stack",
+    "page": "Reshaping",
+    "title": "IndexedTables.stack",
+    "category": "function",
+    "text": "stack(t, by = pkeynames(t); select = excludecols(t, by), variable = :variable, value = :value)\n\nReshape a table from the wide to the long format. Columns in by are kept as indexing columns. Columns in select are stacked. In addition to the id columns, two additional columns labeled variable and value are added, containg the column identifier and the stacked columns.\n\nExamples\n\njulia> t = table(1:4, [1, 4, 9, 16], [1, 8, 27, 64], names = [:x, :xsquare, :xcube], pkey = :x);\n\njulia> stack(t)\nTable with 8 rows, 3 columns:\nx  variable  value\n──────────────────\n1  :xsquare  1\n1  :xcube    1\n2  :xsquare  4\n2  :xcube    8\n3  :xsquare  9\n3  :xcube    27\n4  :xsquare  16\n4  :xcube    64\n\n\n\n"
+},
+
+{
+    "location": "api/reshaping.html#IndexedTables.unstack",
+    "page": "Reshaping",
+    "title": "IndexedTables.unstack",
+    "category": "function",
+    "text": "unstack(t, by = pkeynames(t); variable = :variable, value = :value)\n\nReshape a table from the long to the wide format. Columns in by are kept as indexing columns. Keyword arguments variable and value denote which column contains the column identifier and which the corresponding values.\n\nExamples\n\njulia> t = table(1:4, [1, 4, 9, 16], [1, 8, 27, 64], names = [:x, :xsquare, :xcube], pkey = :x);\n\njulia> long = stack(t)\nTable with 8 rows, 3 columns:\nx  variable  value\n──────────────────\n1  :xsquare  1\n1  :xcube    1\n2  :xsquare  4\n2  :xcube    8\n3  :xsquare  9\n3  :xcube    27\n4  :xsquare  16\n4  :xcube    64\n\njulia> unstack(long)\nTable with 4 rows, 3 columns:\nx  xsquare  xcube\n─────────────────\n1  1        1\n2  4        8\n3  9        27\n4  16       64\n\n\n\n"
+},
+
+{
+    "location": "api/reshaping.html#Reshaping-1",
+    "page": "Reshaping",
+    "title": "Reshaping",
+    "category": "section",
+    "text": "stackunstack"
 },
 
 {
