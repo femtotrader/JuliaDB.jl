@@ -3,37 +3,37 @@
 
 julia&gt; t = table(@NT(x = randn(100), y = randn(100), z = rand(1:5, 100)))
 Table with 100 rows, 3 columns:
-x           y           z
-─────────────────────────
-1.48114     0.00834842  1
-0.224452    0.0104819   4
-0.637037    -0.39461    5
-0.247477    0.151212    5
--0.746252   -1.24114    1
--0.877885   1.12544     2
--1.21566    2.65216     5
--0.0627323  -0.229578   5
--0.475217   0.213686    5
+x          y           z
+────────────────────────
+1.93091    -0.186428   2
+0.406539   1.41967     4
+-0.633363  0.137959    5
+-0.369093  -0.452592   3
+-2.4685    -0.426305   5
+1.63409    -2.67632    3
+-1.50046   -0.802684   5
+-2.16034   -1.24619    4
+0.633758   0.0743178   2
 ⋮
--0.714271   -0.31793    4
--0.533133   -1.40759    5
--1.06353    1.17661     4
-1.03756     -0.4249     3
--0.697683   -0.907067   3
-1.42294     -0.529619   1
-0.15829     -1.15931    5
--0.769915   2.63451     1</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
-Mean: n=100 | value=0.0351243</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
-(Mean = Mean: n=100 | value=0.0351243, Variance = Variance: n=100 | value=1.15756)</code></pre><h3><a class="nav-anchor" id="reduce-via-Series-1" href="#reduce-via-Series-1"><code>reduce</code> via <code>Series</code></a></h3><pre><code class="language-julia-repl">julia&gt; s = Series(Mean(), Variance(), Sum());
+0.725361   -0.0508477  5
+0.874953   -1.29257    5
+0.767353   0.813584    5
+-0.535879  -0.749353   4
+-0.650187  -0.794812   5
+-2.93467   -1.08167    2
+-1.13824   -0.255142   4
+0.637237   -0.243124   1</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
+Mean: n=100 | value=-0.00119373</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
+(Mean = Mean: n=100 | value=-0.00119373, Variance = Variance: n=100 | value=1.33834)</code></pre><h3><a class="nav-anchor" id="reduce-via-Series-1" href="#reduce-via-Series-1"><code>reduce</code> via <code>Series</code></a></h3><pre><code class="language-julia-repl">julia&gt; s = Series(Mean(), Variance(), Sum());
 
 julia&gt; reduce(s, t; select = :x)
 Series
-  ├── Mean: n=100 | value=0.0351243
-  ├── Variance: n=100 | value=1.15756
-  └── Sum: n=100 | value=3.51243</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><h3><a class="nav-anchor" id="Same-OnlineStat-on-each-column-1" href="#Same-OnlineStat-on-each-column-1">Same <code>OnlineStat</code> on each column</a></h3><p>If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. </p><pre><code class="language-julia-repl">julia&gt; reduce(2Mean(), t; select = (:x, :y))
+  ├── Mean: n=100 | value=-0.00119373
+  ├── Variance: n=100 | value=1.33834
+  └── Sum: n=100 | value=-0.119373</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><h3><a class="nav-anchor" id="Same-OnlineStat-on-each-column-1" href="#Same-OnlineStat-on-each-column-1">Same <code>OnlineStat</code> on each column</a></h3><p>If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. </p><pre><code class="language-julia-repl">julia&gt; reduce(2Mean(), t; select = (:x, :y))
 Group
-  ├── Mean: n=100 | value=0.0351243
-  └── Mean: n=100 | value=-0.108125</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
+  ├── Mean: n=100 | value=-0.00119373
+  └── Mean: n=100 | value=0.0567645</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
 ERROR: MethodError: objects of type Array{OnlineStatsBase.OnlineStat,2} are not callable
 Use square brackets [] for indexing an Array.
 
