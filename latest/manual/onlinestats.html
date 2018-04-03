@@ -3,34 +3,34 @@
 
 julia&gt; t = table(@NT(x = randn(100), y = randn(100), z = rand(1:5, 100)))
 Table with 100 rows, 3 columns:
-x           y          z
+x          y           z
 ────────────────────────
--1.25954    -0.713008  5
--0.790863   0.327785   2
--0.340823   -0.877628  4
-1.62753     0.640189   2
-0.155758    -0.486505  4
--0.312609   0.877232   3
--0.579139   0.382191   2
--1.4645     -0.352531  3
--0.248558   1.20386    5
+1.74621    -1.47081    5
+-0.928172  -0.0268673  2
+0.38211    0.424011    1
+-0.892278  0.553838    4
+-1.50414   -0.188053   3
+-0.337786  0.426907    5
+1.00177    -0.255973   2
+-3.06038   -0.76582    2
+0.155157   -1.39087    1
 ⋮
--0.0357718  1.22194    5
-0.743962    0.518555   5
--0.782602   1.0302     1
--1.41334    1.03873    3
-0.6821      1.54868    4
-0.217797    0.54211    1
-0.724757    0.784427   4
-1.41691     0.168427   1</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
-Mean: n=100 | value=0.0229603</code></pre><p>Several <code>OnlineStat</code>s can be calculated on the same column by joining them via <code>Series</code>.</p><pre><code class="language-julia-repl">julia&gt; reduce(Series(Mean(), Variance()), t; select = :x)
+1.86348    -0.683583   5
+-0.904156  0.299639    3
+-0.266115  1.11892     3
+2.53874    -0.665886   4
+0.517936   -0.217844   4
+0.565392   0.847034    3
+-0.560953  1.25836     3
+0.506623   -1.29462    2</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-a-single-column-1" href="#Usage-on-a-single-column-1">Usage on a single column</a></h2><h3><a class="nav-anchor" id="reduce-via-OnlineStat-1" href="#reduce-via-OnlineStat-1"><code>reduce</code> via <code>OnlineStat</code></a></h3><pre><code class="language-julia-repl">julia&gt; reduce(Mean(), t; select = :x)
+Mean: n=100 | value=-0.0061806</code></pre><p>Several <code>OnlineStat</code>s can be calculated on the same column by joining them via <code>Series</code>.</p><pre><code class="language-julia-repl">julia&gt; reduce(Series(Mean(), Variance()), t; select = :x)
 Series
-  ├── Mean: n=100 | value=0.0229603
-  └── Variance: n=100 | value=1.05629</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
-(Mean = Mean: n=100 | value=0.0229603, Variance = Variance: n=100 | value=1.05629)</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><p>To calculate different statistics on each column, OnlineStats offers the <code>Group</code> type.   There are several methods for creating a <code>Group</code>.  </p><pre><code class="language-none">2Mean() == Group(Mean(), Mean())
+  ├── Mean: n=100 | value=-0.0061806
+  └── Variance: n=100 | value=1.26289</code></pre><h3><a class="nav-anchor" id="reduce-via-Tuple-of-OnlineStats-1" href="#reduce-via-Tuple-of-OnlineStats-1"><code>reduce</code> via Tuple of <code>OnlineStat</code>s</a></h3><pre><code class="language-julia-repl">julia&gt; reduce((Mean(), Variance()), t; select = :x)
+(Mean = Mean: n=100 | value=-0.0061806, Variance = Variance: n=100 | value=1.26289)</code></pre><hr/><h2><a class="nav-anchor" id="Usage-on-multiple-columns-1" href="#Usage-on-multiple-columns-1">Usage on multiple columns</a></h2><p>To calculate different statistics on each column, OnlineStats offers the <code>Group</code> type.   There are several methods for creating a <code>Group</code>.  </p><pre><code class="language-none">2Mean() == Group(Mean(), Mean())
 [Mean() CountMap(Int)] == Group(Mean(), CountMap(Int))</code></pre><pre><code class="language-julia-repl">julia&gt; reduce(2Mean(), t; select = (:x, :y))
 Group
-  ├── Mean: n=100 | value=0.0229603
-  └── Mean: n=100 | value=0.209869</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; g = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
+  ├── Mean: n=100 | value=-0.0061806
+  └── Mean: n=100 | value=0.0011239</code></pre><h3><a class="nav-anchor" id="Different-OnlineStats-on-columns-1" href="#Different-OnlineStats-on-columns-1">Different <code>OnlineStat</code>s on columns</a></h3><p>To calculate different statistics on different columns, we need to make a <code>Group</code>, which can be created via <code>hcat</code>.</p><pre><code class="language-julia-repl">julia&gt; g = reduce([Mean() CountMap(Int)], t; select = (:x, :z))
 ERROR: MethodError: objects of type Array{OnlineStatsBase.OnlineStat,2} are not callable
 Use square brackets [] for indexing an Array.</code></pre><footer><hr/><a class="previous" href="../api/plotting.html"><span class="direction">Previous</span><span class="title">Plotting</span></a><a class="next" href="out-of-core.html"><span class="direction">Next</span><span class="title">Out-of-core functionality</span></a></footer></article></body></html>
