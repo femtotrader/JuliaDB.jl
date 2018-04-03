@@ -229,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Selection",
     "title": "Base.filter",
     "category": "function",
-    "text": "filter(f, t::DNDSparse)\n\nFilters t removing rows for which f is false. f is passed only the data and not the index.\n\n\n\nfilter(pred, t::Union{NextTable, NDSparse}; select)\n\nFilter rows in t according to pred. select choses the fields that act as input to pred.\n\npred can be:\n\nA function - selected structs or values are passed to this function\nA tuple of column => function pairs: applies to each named column the corresponding function, keeps only rows where all such conditions are satisfied.\n\nBy default, filter iterates a table a row at a time:\n\njulia> t = table([\"a\",\"b\",\"c\"], [0.01, 0.05, 0.07], [2,1,0],\n                 names=[:n, :t, :x])\nTable with 3 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"b\"  0.05  1\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t) # whole row\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\n\nBy default, filter iterates by values of an NDSparse:\n\njulia> x = ndsparse(@NT(n=[\"a\",\"b\",\"c\"], t=[0.01, 0.05, 0.07]), [2,1,0])\n2-d NDSparse with 3 values (Int64):\nn    t    │\n──────────┼──\n\"a\"  0.01 │ 2\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\njulia> filter(y->y<2, x)\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nIf select is specified. (See Selection convention) then, the selected values will be iterated instead.\n\njulia> filter(iseven, t, select=:x)\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t, select=(:x,:t))\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\nselect works similarly for NDSparse:\n\njulia> filter(p->p[2]/p[1] < 100, x, select=(:t, 3))\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nHere 3 represents the third column, which is the values, p is a tuple of t field and the value.\n\nFiltering by many single columns can be done by passing a tuple of column_name => function pairs.\n\njulia> filter((:x=>iseven, :t=>a->a>0.01), t)\nTable with 1 rows, 3 columns:\nn    t     x\n────────────\n\"c\"  0.07  0\n\njulia> filter((3=>iseven, :t=>a->a>0.01), x) # NDSparse\n2-d NDSparse with 1 values (Int64):\nn    t    │\n──────────┼──\n\"c\"  0.07 │ 0\n\n\n\n\n"
+    "text": "filter(pred, t::Union{NextTable, NDSparse}; select)\n\nFilter rows in t according to pred. select choses the fields that act as input to pred.\n\npred can be:\n\nA function - selected structs or values are passed to this function\nA tuple of column => function pairs: applies to each named column the corresponding function, keeps only rows where all such conditions are satisfied.\n\nBy default, filter iterates a table a row at a time:\n\njulia> t = table([\"a\",\"b\",\"c\"], [0.01, 0.05, 0.07], [2,1,0],\n                 names=[:n, :t, :x])\nTable with 3 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"b\"  0.05  1\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t) # whole row\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\n\nBy default, filter iterates by values of an NDSparse:\n\njulia> x = ndsparse(@NT(n=[\"a\",\"b\",\"c\"], t=[0.01, 0.05, 0.07]), [2,1,0])\n2-d NDSparse with 3 values (Int64):\nn    t    │\n──────────┼──\n\"a\"  0.01 │ 2\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\njulia> filter(y->y<2, x)\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nIf select is specified. (See Selection convention) then, the selected values will be iterated instead.\n\njulia> filter(iseven, t, select=:x)\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"a\"  0.01  2\n\"c\"  0.07  0\n\njulia> filter(p->p.x/p.t < 100, t, select=(:x,:t))\nTable with 2 rows, 3 columns:\nn    t     x\n────────────\n\"b\"  0.05  1\n\"c\"  0.07  0\n\nselect works similarly for NDSparse:\n\njulia> filter(p->p[2]/p[1] < 100, x, select=(:t, 3))\n2-d NDSparse with 2 values (Int64):\nn    t    │\n──────────┼──\n\"b\"  0.05 │ 1\n\"c\"  0.07 │ 0\n\nHere 3 represents the third column, which is the values, p is a tuple of t field and the value.\n\nFiltering by many single columns can be done by passing a tuple of column_name => function pairs.\n\njulia> filter((:x=>iseven, :t=>a->a>0.01), t)\nTable with 1 rows, 3 columns:\nn    t     x\n────────────\n\"c\"  0.07  0\n\njulia> filter((3=>iseven, :t=>a->a>0.01), x) # NDSparse\n2-d NDSparse with 1 values (Int64):\nn    t    │\n──────────┼──\n\"c\"  0.07 │ 0\n\n\n\n\nfilter(f, t::DNDSparse)\n\nFilters t removing rows for which f is false. f is passed only the data and not the index.\n\n\n\n"
 },
 
 {
@@ -533,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Joins",
     "title": "Base.merge",
     "category": "function",
-    "text": "Merge two NamedTuples favoring the lhs Order is preserved lhs names come first. This copies the underlying data.\n\n\n\nmerge(a::Table, a::Table; pkey)\n\nMerge rows from two datasets while keeping them ordered by primary keys (pkey). By default, if the tables have the same primary key columns in the same order, they will be used. Otherwise no primary key will be used. The tables must have the same column names. If they are not in the same order, the order from the first table will be used.\n\nExamples:\n\njulia> a = table([1,3,5], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n1  1\n3  2\n5  3\n\njulia> b = table([2,3,4], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n2  1\n3  2\n4  3\n\njulia> merge(a,b)\nTable with 6 rows, 2 columns:\nx  y\n────\n1  1\n2  1\n3  2\n3  2\n4  3\n5  3\n\n\nmerge(a::NDSparse, a::NDSparse; agg)\n\nMerge rows from two NDSparse objects. To keep unique keys, if a key is present in both inputs, the value from the second input is chosen. You can pass the agg keyword argument to combine the values with a custom function.\n\njulia> a = ndsparse([1,3,5], [1,2,3]);\n\njulia> b = ndsparse([2,3,4], [1,2,3]);\n\njulia> merge(a,b)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 2\n4 │ 3\n5 │ 3\n\njulia> merge(a,b,agg=+)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 4\n4 │ 3\n5 │ 3\n\n\n\n"
+    "text": "merge(a::Table, a::Table; pkey)\n\nMerge rows from two datasets while keeping them ordered by primary keys (pkey). By default, if the tables have the same primary key columns in the same order, they will be used. Otherwise no primary key will be used. The tables must have the same column names. If they are not in the same order, the order from the first table will be used.\n\nExamples:\n\njulia> a = table([1,3,5], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n1  1\n3  2\n5  3\n\njulia> b = table([2,3,4], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n2  1\n3  2\n4  3\n\njulia> merge(a,b)\nTable with 6 rows, 2 columns:\nx  y\n────\n1  1\n2  1\n3  2\n3  2\n4  3\n5  3\n\n\nmerge(a::NDSparse, a::NDSparse; agg)\n\nMerge rows from two NDSparse objects. To keep unique keys, if a key is present in both inputs, the value from the second input is chosen. You can pass the agg keyword argument to combine the values with a custom function.\n\njulia> a = ndsparse([1,3,5], [1,2,3]);\n\njulia> b = ndsparse([2,3,4], [1,2,3]);\n\njulia> merge(a,b)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 2\n4 │ 3\n5 │ 3\n\njulia> merge(a,b,agg=+)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 4\n4 │ 3\n5 │ 3\n\n\n\nMerge two NamedTuples favoring the lhs Order is preserved lhs names come first. This copies the underlying data.\n\n\n\n"
 },
 
 {
@@ -725,7 +725,7 @@ var documenterSearchIndex = {"docs": [
     "page": "OnlineStats Integration",
     "title": "Basics",
     "category": "section",
-    "text": "Each statistic/model is a subtype of OnlineStat.  OnlineStats are grouped together in  a Series.  In JuliaDB, the functions reduce and groupreduce can accept:An OnlineStat\nA tuple of OnlineStats\nA Series"
+    "text": "Each OnlineStat can be updated with more data and merged together with another of the  same type.  JuliaDB integrates with OnlineStats via the reduce and  groupreduce functions by accepting an OnlineStat or tuple of OnlineStats."
 },
 
 {
@@ -749,7 +749,7 @@ var documenterSearchIndex = {"docs": [
     "page": "OnlineStats Integration",
     "title": "reduce via OnlineStat",
     "category": "section",
-    "text": "reduce(Mean(), t; select = :x)"
+    "text": "reduce(Mean(), t; select = :x)Several OnlineStats can be calculated on the same column by joining them via Series.reduce(Series(Mean(), Variance()), t; select = :x)"
 },
 
 {
@@ -761,27 +761,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "manual/onlinestats.html#reduce-via-Series-1",
-    "page": "OnlineStats Integration",
-    "title": "reduce via Series",
-    "category": "section",
-    "text": "s = Series(Mean(), Variance(), Sum());\nreduce(s, t; select = :x)"
-},
-
-{
     "location": "manual/onlinestats.html#Usage-on-multiple-columns-1",
     "page": "OnlineStats Integration",
     "title": "Usage on multiple columns",
     "category": "section",
-    "text": ""
-},
-
-{
-    "location": "manual/onlinestats.html#Same-OnlineStat-on-each-column-1",
-    "page": "OnlineStats Integration",
-    "title": "Same OnlineStat on each column",
-    "category": "section",
-    "text": "If we want the same statistic calculated for each column in the selection, we need to specify the number of columns. reduce(2Mean(), t; select = (:x, :y))"
+    "text": "To calculate different statistics on each column, OnlineStats offers the Group type.   There are several methods for creating a Group.  2Mean() == Group(Mean(), Mean())\n[Mean() CountMap(Int)] == Group(Mean(), CountMap(Int))reduce(2Mean(), t; select = (:x, :y))"
 },
 
 {
@@ -789,7 +773,7 @@ var documenterSearchIndex = {"docs": [
     "page": "OnlineStats Integration",
     "title": "Different OnlineStats on columns",
     "category": "section",
-    "text": "To calculate different statistics on different columns, we need to make a Group, which can be created via hcat.s = reduce([Mean() CountMap(Int)], t; select = (:x, :z))\n\nvalue(stats(s)[1])"
+    "text": "To calculate different statistics on different columns, we need to make a Group, which can be created via hcat.g = reduce([Mean() CountMap(Int)], t; select = (:x, :z))"
 },
 
 {
