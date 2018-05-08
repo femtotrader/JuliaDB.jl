@@ -293,7 +293,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Selection",
     "title": "IndexedTables.setcol",
     "category": "function",
-    "text": "setcol(t::Table, col::Union{Symbol, Int}, x::Selection)\n\nSets a x as the column identified by col. Returns a new table.\n\nsetcol(t::Table, map::Pair...)\n\nSet many columns at a time.\n\nExamples:\n\njulia> t = table([1,2], [3,4], names=[:x, :y])\nTable with 2 rows, 2 columns:\nx  y\n────\n1  3\n2  4\n\njulia> setcol(t, 2, [5,6])\nTable with 2 rows, 2 columns:\nx  y\n────\n1  5\n2  6\n\n\nx can be any selection that transforms existing columns.\n\njulia> setcol(t, :x, :x => x->1/x)\nTable with 2 rows, 2 columns:\nx    y\n──────\n1.0  5\n0.5  6\n\n\nsetcol will result in a re-sorted copy if a primary key column is replaced.\n\njulia> t = table([0.01, 0.05], [1,2], [3,4], names=[:t, :x, :y], pkey=:t)\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.01  1  3\n0.05  2  4\n\njulia> t2 = setcol(t, :t, [0.1,0.05])\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.05  2  4\n0.1   1  3\n\njulia> t == t2\nfalse\n\n\n\n\n"
+    "text": "setcol(t::Table, col::Union{Symbol, Int}, x::Selection)\n\nSets a x as the column identified by col. Returns a new table.\n\nsetcol(t::Table, map::Pair...)\n\nSet many columns at a time.\n\nExamples:\n\njulia> t = table([1,2], [3,4], names=[:x, :y])\nTable with 2 rows, 2 columns:\nx  y\n────\n1  3\n2  4\n\njulia> setcol(t, 2, [5,6])\nTable with 2 rows, 2 columns:\nx  y\n────\n1  5\n2  6\n\n\nx can be any selection that transforms existing columns.\n\njulia> setcol(t, :x, :x => x->1/x)\nTable with 2 rows, 2 columns:\nx    y\n──────\n1.0  5\n0.5  6\n\n\nsetcol will result in a re-sorted copy if a primary key column is replaced.\n\njulia> t = table([0.01, 0.05], [1,2], [3,4], names=[:t, :x, :y], pkey=:t)\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.01  1  3\n0.05  2  4\n\njulia> t2 = setcol(t, :t, [0.1,0.05])\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.05  2  4\n0.1   1  3\n\njulia> t == t2\nfalse\n\n\nIf col is not an existing column, setcol will add it:\n\njulia> t = table([1,2], [2,3], names = [:a,:b])\nTable with 2 rows, 2 columns:\na  b\n────\n1  2\n2  3\n\njulia> setcol(t, :c, [1,2])\nTable with 2 rows, 3 columns:\na  b  c\n───────\n1  2  1\n2  3  2\n\n\n\n"
 },
 
 {
@@ -301,7 +301,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Selection",
     "title": "IndexedTables.pushcol",
     "category": "function",
-    "text": "pushcol(t, name, x)\n\nPush a column x to the end of the table. name is the name for the new column. Returns a new table.\n\nExample:\n\njulia> t = table([0.01, 0.05], [2,1], [3,4], names=[:t, :x, :y], pkey=:t)\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.01  2  3\n0.05  1  4\n\njulia> pushcol(t, :z, [1//2, 3//4])\nTable with 2 rows, 4 columns:\nt     x  y  z\n────────────────\n0.01  2  3  1//2\n0.05  1  4  3//4\n\n\n\n\n"
+    "text": "pushcol(t, name, x)\n\nPush a column x to the end of the table. name is the name for the new column. Returns a new table.\n\npushcol(t, map::Pair...)\n\nPush many columns at a time.\n\nExample:\n\njulia> t = table([0.01, 0.05], [2,1], [3,4], names=[:t, :x, :y], pkey=:t)\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.01  2  3\n0.05  1  4\n\njulia> pushcol(t, :z, [1//2, 3//4])\nTable with 2 rows, 4 columns:\nt     x  y  z\n────────────────\n0.01  2  3  1//2\n0.05  1  4  3//4\n\n\n\n\n"
 },
 
 {
@@ -309,7 +309,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Selection",
     "title": "IndexedTables.popcol",
     "category": "function",
-    "text": "popcol(t, col)\n\nRemove the column col from the table. Returns a new table.\n\njulia> t = table([0.01, 0.05], [2,1], [3,4], names=[:t, :x, :y], pkey=:t)\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.01  2  3\n0.05  1  4\n\njulia> popcol(t, :x)\nTable with 2 rows, 2 columns:\nt     y\n───────\n0.01  3\n0.05  4\n\n\n\n"
+    "text": "popcol(t, col)\n\nRemove the column col from the table. Returns a new table.\n\npopcol(t, cols...)\n\nRemove many columns at a time.\n\njulia> t = table([0.01, 0.05], [2,1], [3,4], names=[:t, :x, :y], pkey=:t)\nTable with 2 rows, 3 columns:\nt     x  y\n──────────\n0.01  2  3\n0.05  1  4\n\njulia> popcol(t, :x)\nTable with 2 rows, 2 columns:\nt     y\n───────\n0.01  3\n0.05  4\n\n\n\n"
 },
 
 {
@@ -341,7 +341,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Selection",
     "title": "IndexedTables.renamecol",
     "category": "function",
-    "text": "renamecol(t, col, newname)\n\nSet newname as the new name for column col in t. Returns a new table.\n\njulia> t = table([0.01, 0.05], [2,1], names=[:t, :x])\nTable with 2 rows, 2 columns:\nt     x\n───────\n0.01  2\n0.05  1\n\njulia> renamecol(t, :t, :time)\nTable with 2 rows, 2 columns:\ntime  x\n───────\n0.01  2\n0.05  1\n\n\n\n"
+    "text": "renamecol(t, col, newname)\n\nSet newname as the new name for column col in t. Returns a new table.\n\nrenamecol(t, map::Pair...)\n\nRename many columns at a time.\n\njulia> t = table([0.01, 0.05], [2,1], names=[:t, :x])\nTable with 2 rows, 2 columns:\nt     x\n───────\n0.01  2\n0.05  1\n\njulia> renamecol(t, :t, :time)\nTable with 2 rows, 2 columns:\ntime  x\n───────\n0.01  2\n0.05  1\n\n\n\n"
 },
 
 {
@@ -461,7 +461,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Aggregation",
     "title": "IndexedTables.summarize",
     "category": "function",
-    "text": "summarize(f, t, by = pkeynames(t); select = excludecols(t, by))\n\nApply summary functions column-wise to a table. Return a NamedTuple in the non-grouped case and a table in the grouped case.\n\nExamples\n\njulia> t = table([1, 2, 3], [1, 1, 1], names = [:x, :y]);\n\njulia> summarize((mean, std), t)\n(x_mean = 2.0, y_mean = 1.0, x_std = 1.0, y_std = 0.0)\n\njulia> s = table([\"a\",\"a\",\"b\",\"b\"], [1,3,5,7], [2,2,2,2], names = [:x, :y, :z], pkey = :x);\n\njulia> summarize(mean, s)\nTable with 2 rows, 3 columns:\nx    y    z\n─────────────\n\"a\"  2.0  2.0\n\"b\"  6.0  2.0\n\nUse a NamedTuple to have different names for the summary functions:\n\njulia> summarize(@NT(m = mean, s = std), t)\n(x_m = 2.0, y_m = 1.0, x_s = 1.0, y_s = 0.0)\n\nUse select to only summarize some columns:\n\njulia> summarize(@NT(m = mean, s = std), t, select = :x)\n(m = 2.0, s = 1.0)\n\n\n\n"
+    "text": "summarize(f, t, by = pkeynames(t); select = excludecols(t, by), stack = false, variable = :variable)\n\nApply summary functions column-wise to a table. Return a NamedTuple in the non-grouped case and a table in the grouped case. Use stack=true to stack results of the same summary function for different columns.\n\nExamples\n\njulia> t = table([1, 2, 3], [1, 1, 1], names = [:x, :y]);\n\njulia> summarize((mean, std), t)\n(x_mean = 2.0, y_mean = 1.0, x_std = 1.0, y_std = 0.0)\n\njulia> s = table([\"a\",\"a\",\"b\",\"b\"], [1,3,5,7], [2,2,2,2], names = [:x, :y, :z], pkey = :x);\n\njulia> summarize(mean, s)\nTable with 2 rows, 3 columns:\nx    y    z\n─────────────\n\"a\"  2.0  2.0\n\"b\"  6.0  2.0\n\njulia> summarize(mean, s, stack = true)\nTable with 4 rows, 3 columns:\nx    variable  mean\n───────────────────\n\"a\"  :y        2.0\n\"a\"  :z        2.0\n\"b\"  :y        6.0\n\"b\"  :z        2.0\n\nUse a NamedTuple to have different names for the summary functions:\n\njulia> summarize(@NT(m = mean, s = std), t)\n(x_m = 2.0, y_m = 1.0, x_s = 1.0, y_s = 0.0)\n\nUse select to only summarize some columns:\n\njulia> summarize(@NT(m = mean, s = std), t, select = :x)\n(m = 2.0, s = 1.0)\n\n\n\n"
 },
 
 {
