@@ -389,7 +389,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Selection",
     "title": "Column special selection",
     "category": "section",
-    "text": "This section describes some special types that can be used to simplify column selection. These types can be used in combination with select, rows or columns, as well as any other function that requires a by or select argument.AllNotKeysBetweenFinally, to select columns whose name respects a given predicate, pass a function to select (or rows, or columns):julia> t = table([0.01, 0.05], [2,1], [2, 3], names=[:t, :x, :z])\nTable with 2 rows, 3 columns:\nt     x  z\n──────────\n0.01  2  2\n0.05  1  3\n\njulia> select(t, i -> i != :z)\nTable with 2 rows, 2 columns:\nt     x\n───────\n0.01  2\n0.05  1"
+    "text": "This section describes some special types that can be used to simplify column selection. These types can be used in combination with select, rows or columns, as well as any other function that requires a by or select argument.AllNotKeysBetweenTo select columns whose name respects a given predicate, pass a function to select (or rows, or columns):julia> t = table([0.01, 0.05], [2, 1], [2, 3], names=[:t, :x, :z])\nTable with 2 rows, 3 columns:\nt     x  z\n──────────\n0.01  2  2\n0.05  1  3\n\njulia> select(t, i -> i != :z)\nTable with 2 rows, 2 columns:\nt     x\n───────\n0.01  2\n0.05  1To filter columns whose name matches a regular expression, pass the Regex directly:julia> t = table([0.01, 0.05], [2.3, 1.2], [\"setosa\", \"virginica\"],\n    names=[:PetalLength, :PetalWidth, :Species])\nTable with 2 rows, 3 columns:\nPetalLength  PetalWidth  Species\n────────────────────────────────────\n0.01         2.3         \"setosa\"\n0.05         1.2         \"virginica\"\n\njulia> select(t, r\"^Petal\")\nTable with 2 rows, 2 columns:\nPetalLength  PetalWidth\n───────────────────────\n0.01         2.3\n0.05         1.2"
 },
 
 {
@@ -533,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Joins",
     "title": "Base.merge",
     "category": "function",
-    "text": "Merge two NamedTuples favoring the lhs Order is preserved lhs names come first. This copies the underlying data.\n\n\n\nmerge(a::Table, a::Table; pkey)\n\nMerge rows from two datasets while keeping them ordered by primary keys (pkey). By default, if the tables have the same primary key columns in the same order, they will be used. Otherwise no primary key will be used. The tables must have the same column names. If they are not in the same order, the order from the first table will be used.\n\nExamples:\n\njulia> a = table([1,3,5], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n1  1\n3  2\n5  3\n\njulia> b = table([2,3,4], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n2  1\n3  2\n4  3\n\njulia> merge(a,b)\nTable with 6 rows, 2 columns:\nx  y\n────\n1  1\n2  1\n3  2\n3  2\n4  3\n5  3\n\n\nmerge(a::NDSparse, a::NDSparse; agg)\n\nMerge rows from two NDSparse objects. To keep unique keys, if a key is present in both inputs, the value from the second input is chosen. You can pass the agg keyword argument to combine the values with a custom function.\n\njulia> a = ndsparse([1,3,5], [1,2,3]);\n\njulia> b = ndsparse([2,3,4], [1,2,3]);\n\njulia> merge(a,b)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 2\n4 │ 3\n5 │ 3\n\njulia> merge(a,b,agg=+)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 4\n4 │ 3\n5 │ 3\n\n\n\n"
+    "text": "merge(a::Table, a::Table; pkey)\n\nMerge rows from two datasets while keeping them ordered by primary keys (pkey). By default, if the tables have the same primary key columns in the same order, they will be used. Otherwise no primary key will be used. The tables must have the same column names. If they are not in the same order, the order from the first table will be used.\n\nExamples:\n\njulia> a = table([1,3,5], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n1  1\n3  2\n5  3\n\njulia> b = table([2,3,4], [1,2,3], names=[:x,:y], pkey=:x)\nTable with 3 rows, 2 columns:\nx  y\n────\n2  1\n3  2\n4  3\n\njulia> merge(a,b)\nTable with 6 rows, 2 columns:\nx  y\n────\n1  1\n2  1\n3  2\n3  2\n4  3\n5  3\n\n\nmerge(a::NDSparse, a::NDSparse; agg)\n\nMerge rows from two NDSparse objects. To keep unique keys, if a key is present in both inputs, the value from the second input is chosen. You can pass the agg keyword argument to combine the values with a custom function.\n\njulia> a = ndsparse([1,3,5], [1,2,3]);\n\njulia> b = ndsparse([2,3,4], [1,2,3]);\n\njulia> merge(a,b)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 2\n4 │ 3\n5 │ 3\n\njulia> merge(a,b,agg=+)\n1-d NDSparse with 5 values (Int64):\n1 │\n──┼──\n1 │ 1\n2 │ 1\n3 │ 4\n4 │ 3\n5 │ 3\n\n\n\nMerge two NamedTuples favoring the lhs Order is preserved lhs names come first. This copies the underlying data.\n\n\n\n"
 },
 
 {
@@ -886,6 +886,150 @@ var documenterSearchIndex = {"docs": [
     "title": "Prediction",
     "category": "section",
     "text": "Now let\'s load some testing data to use the model we learned to predict survival.\ndownload(\"https://raw.githubusercontent.com/agconti/\"*\n          \"kaggle-titanic/master/data/test.csv\", \"test.csv\")\n\ntest_table = loadtable(\"test.csv\", escapechar=\'\"\')\n\ntest_input = ML.featuremat(input_sch, test_table) ;Run the model on one observation:model(test_input[:, 1])The output has two numbers which add up to 1: the probability of not surviving vs that of surviving. It seems, according to our model, that this person is unlikely to survive on the titanic.You can also run the model on all observations by simply passing the whole feature matrix to model.model(test_input)"
+},
+
+{
+    "location": "manual/tutorial.html#",
+    "page": "Tutorial",
+    "title": "Tutorial",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "manual/tutorial.html#Tutorial-1",
+    "page": "Tutorial",
+    "title": "Tutorial",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "manual/tutorial.html#Introduction-1",
+    "page": "Tutorial",
+    "title": "Introduction",
+    "category": "section",
+    "text": "This is a port of a well known tutorial for the JuliaDB package. This tutorial is available as a Jupyter notebook here."
+},
+
+{
+    "location": "manual/tutorial.html#Getting-the-data-1",
+    "page": "Tutorial",
+    "title": "Getting the data",
+    "category": "section",
+    "text": "The data is some example flight dataset that you can find here. Simply open the link and choose Save as from the File menu in your browser to save the data to a folder on your computer."
+},
+
+{
+    "location": "manual/tutorial.html#Loading-the-data-1",
+    "page": "Tutorial",
+    "title": "Loading the data",
+    "category": "section",
+    "text": "Loading a csv file is straightforward with JuliaDB:using JuliaDB, IndexedTables\nflights = loadtable(\"hflights.csv\");Of course, replace the path with the location of the dataset you have just downloaded."
+},
+
+{
+    "location": "manual/tutorial.html#Filtering-the-data-1",
+    "page": "Tutorial",
+    "title": "Filtering the data",
+    "category": "section",
+    "text": "In order to select only rows matching certain criteria, use the filter function:filter(i -> (i.Month == 1) && (i.DayofMonth == 1), flights);To test if one of two conditions is verified:filter(i -> (i.UniqueCarrier == \"AA\") || (i.UniqueCarrier == \"UA\"), flights)\n\n# in this case, you can simply test whether the `UniqueCarrier` is in a given list:\n\nfilter(i -> i.UniqueCarrier in [\"AA\", \"UA\"], flights);"
+},
+
+{
+    "location": "manual/tutorial.html#Select:-pick-columns-by-name-1",
+    "page": "Tutorial",
+    "title": "Select: pick columns by name",
+    "category": "section",
+    "text": "You can use the select function to select a subset of columns:select(flights, (:DepTime, :ArrTime, :FlightNum))Table with 227496 rows, 3 columns:\nDepTime  ArrTime  FlightNum\n───────────────────────────\n1400     1500     428\n1401     1501     428\n1352     1502     428\n1403     1513     428\n1405     1507     428\n1359     1503     428\n1359     1509     428\n1355     1454     428\n1443     1554     428\n1443     1553     428\n1429     1539     428\n1419     1515     428\n⋮\n1939     2119     124\n556      745      280\n1026     1208     782\n1611     1746     1050\n758      1051     201\n1307     1600     471\n1818     2111     1191\n2047     2334     1674\n912      1031     127\n656      812      621\n1600     1713     1597Let\'s select all columns between :Year and :Month as well as all columns containing \"Taxi\" or \"Delay\" in their name. Between selects columns between two specified extremes, passing a function filters column names by that function and All takes the union of all selectors (or all columns, if no selector is specified).select(flights, All(Between(:Year, :DayofMonth), i -> contains(string(i), \"Taxi\"), i -> contains(string(i), \"Delay\")))Table with 227496 rows, 7 columns:\nYear  Month  DayofMonth  TaxiIn  TaxiOut  ArrDelay  DepDelay\n────────────────────────────────────────────────────────────\n2011  1      1           7       13       -10       0\n2011  1      2           6       9        -9        1\n2011  1      3           5       17       -8        -8\n2011  1      4           9       22       3         3\n2011  1      5           9       9        -3        5\n2011  1      6           6       13       -7        -1\n2011  1      7           12      15       -1        -1\n2011  1      8           7       12       -16       -5\n2011  1      9           8       22       44        43\n2011  1      10          6       19       43        43\n2011  1      11          8       20       29        29\n2011  1      12          4       11       5         19\n⋮\n2011  12     6           4       15       14        39\n2011  12     6           13      9        -10       -4\n2011  12     6           4       12       -12       1\n2011  12     6           3       9        -9        16\n2011  12     6           3       10       -4        -2\n2011  12     6           5       10       0         7\n2011  12     6           5       11       -9        8\n2011  12     6           4       9        4         7\n2011  12     6           4       14       -4        -3\n2011  12     6           3       9        -13       -4\n2011  12     6           3       11       -12       0The same could be achieved more concisely using regular expressions:select(flights, All(Between(:Year, :DayofMonth), r\"Taxi|Delay\"))"
+},
+
+{
+    "location": "manual/tutorial.html#Applying-several-operations-1",
+    "page": "Tutorial",
+    "title": "Applying several operations",
+    "category": "section",
+    "text": "If one wants to apply several operations one after the other, there are two main approaches:nesting\npipingLet\'s assume we want to select UniqueCarrier and DepDelay columns and filter for delays over 60 minutes. The nesting approach would be:filter(i -> i.DepDelay > 60, select(flights, (:UniqueCarrier, :DepDelay)))Table with 10242 rows, 2 columns:\nUniqueCarrier  DepDelay\n───────────────────────\n\"AA\"           90\n\"AA\"           67\n\"AA\"           74\n\"AA\"           125\n\"AA\"           82\n\"AA\"           99\n\"AA\"           70\n\"AA\"           61\n\"AA\"           74\n\"AS\"           73\n\"B6\"           136\n\"B6\"           68\n⋮\n\"WN\"           129\n\"WN\"           61\n\"WN\"           70\n\"WN\"           76\n\"WN\"           63\n\"WN\"           144\n\"WN\"           117\n\"WN\"           124\n\"WN\"           72\n\"WN\"           70\n\"WN\"           78For piping, we\'ll use the excellent Lazy package.import Lazy\nLazy.@as x flights begin\n    select(x, (:UniqueCarrier, :DepDelay))\n    filter(i -> i.DepDelay > 60, x)\nendTable with 10242 rows, 2 columns:\nUniqueCarrier  DepDelay\n───────────────────────\n\"AA\"           90\n\"AA\"           67\n\"AA\"           74\n\"AA\"           125\n\"AA\"           82\n\"AA\"           99\n\"AA\"           70\n\"AA\"           61\n\"AA\"           74\n\"AS\"           73\n\"B6\"           136\n\"B6\"           68\n⋮\n\"WN\"           129\n\"WN\"           61\n\"WN\"           70\n\"WN\"           76\n\"WN\"           63\n\"WN\"           144\n\"WN\"           117\n\"WN\"           124\n\"WN\"           72\n\"WN\"           70\n\"WN\"           78where the variable x denotes our data at each stage. At the beginning it is flights, then it only has the two relevant columns and, at the last step, it is filtered."
+},
+
+{
+    "location": "manual/tutorial.html#Reorder-rows-1",
+    "page": "Tutorial",
+    "title": "Reorder rows",
+    "category": "section",
+    "text": "Select UniqueCarrier and DepDelay columns and sort by DepDelay:sort(flights, :DepDelay, select = (:UniqueCarrier, :DepDelay))Table with 227496 rows, 2 columns:\nUniqueCarrier  DepDelay\n───────────────────────\n\"OO\"           -33\n\"MQ\"           -23\n\"XE\"           -19\n\"XE\"           -19\n\"CO\"           -18\n\"EV\"           -18\n\"XE\"           -17\n\"CO\"           -17\n\"XE\"           -17\n\"MQ\"           -17\n\"XE\"           -17\n\"DL\"           -17\n⋮\n\"US\"           #NA\n\"US\"           #NA\n\"US\"           #NA\n\"WN\"           #NA\n\"WN\"           #NA\n\"WN\"           #NA\n\"WN\"           #NA\n\"WN\"           #NA\n\"WN\"           #NA\n\"WN\"           #NA\n\"WN\"           #NAor, in reverse order:sort(flights, :DepDelay, select = (:UniqueCarrier, :DepDelay), rev = true)"
+},
+
+{
+    "location": "manual/tutorial.html#Apply-a-function-row-by-row-1",
+    "page": "Tutorial",
+    "title": "Apply a function row by row",
+    "category": "section",
+    "text": "To apply a function row by row, use map: the first argument is the anonymous function, the second is the dataset.speed = map(i -> i.Distance / i.AirTime * 60, flights)227496-element DataValues.DataValueArray{Float64,1}:\n 336.0  \n 298.667\n 280.0  \n 344.615\n 305.455\n 298.667\n 312.558\n 336.0  \n 327.805\n 298.667\n 320.0  \n 327.805\n 305.455\n ⋮      \n 261.818\n 508.889\n 473.793\n 479.302\n 496.627\n 468.6  \n 478.163\n 483.093\n 498.511\n 445.574\n 424.688\n 460.678"
+},
+
+{
+    "location": "manual/tutorial.html#Add-new-variables-1",
+    "page": "Tutorial",
+    "title": "Add new variables",
+    "category": "section",
+    "text": "Use the pushcol function to add a column to an existing dataset:pushcol(flights, :Speed, speed);If you need to add the new column to the existing dataset:flights = pushcol(flights, :Speed, speed);"
+},
+
+{
+    "location": "manual/tutorial.html#Reduce-variables-to-values-1",
+    "page": "Tutorial",
+    "title": "Reduce variables to values",
+    "category": "section",
+    "text": "To get the average delay, we first filter away datapoints where ArrDelay is missing, then group by :Dest, select :ArrDelay and compute the mean:groupby(@NT(avg_delay = mean∘dropna), flights, :Dest, select = :ArrDelay)Table with 116 rows, 2 columns:\nDest   avg_delay\n────────────────\n\"ABQ\"  7.22626\n\"AEX\"  5.83944\n\"AGS\"  4.0\n\"AMA\"  6.8401\n\"ANC\"  26.0806\n\"ASE\"  6.79464\n\"ATL\"  8.23325\n\"AUS\"  7.44872\n\"AVL\"  9.97399\n\"BFL\"  -13.1988\n\"BHM\"  8.69583\n\"BKG\"  -16.2336\n⋮\n\"SJU\"  11.5464\n\"SLC\"  1.10485\n\"SMF\"  4.66271\n\"SNA\"  0.35801\n\"STL\"  7.45488\n\"TPA\"  4.88038\n\"TUL\"  6.35171\n\"TUS\"  7.80168\n\"TYS\"  11.3659\n\"VPS\"  12.4572\n\"XNA\"  6.89628"
+},
+
+{
+    "location": "manual/tutorial.html#Performance-tip-1",
+    "page": "Tutorial",
+    "title": "Performance tip",
+    "category": "section",
+    "text": "If you\'ll group often by the same variable, you can sort your data by that variable at once to optimize future computations.sortedflights = reindex(flights, :Dest)Table with 227496 rows, 22 columns:\nColumns:\n#   colname            type\n────────────────────────────────────────────────────\n1   Dest               String\n2   Year               Int64\n3   Month              Int64\n4   DayofMonth         Int64\n5   DayOfWeek          Int64\n6   DepTime            DataValues.DataValue{Int64}\n7   ArrTime            DataValues.DataValue{Int64}\n8   UniqueCarrier      String\n9   FlightNum          Int64\n10  TailNum            String\n11  ActualElapsedTime  DataValues.DataValue{Int64}\n12  AirTime            DataValues.DataValue{Int64}\n13  ArrDelay           DataValues.DataValue{Int64}\n14  DepDelay           DataValues.DataValue{Int64}\n15  Origin             String\n16  Distance           Int64\n17  TaxiIn             DataValues.DataValue{Int64}\n18  TaxiOut            DataValues.DataValue{Int64}\n19  Cancelled          Int64\n20  CancellationCode   String\n21  Diverted           Int64\n22  Speed              DataValues.DataValue{Float64}using BenchmarkTools\n\nprintln(\"Presorted timing:\")\n@benchmark groupby(@NT(avg_delay = mean∘dropna), sortedflights, select = :ArrDelay)Presorted timing:\n\nBenchmarkTools.Trial:\n  memory estimate:  3.96 MiB\n  allocs estimate:  2189\n  --------------\n  minimum time:     7.407 ms (0.00% GC)\n  median time:      7.892 ms (0.00% GC)\n  mean time:        8.167 ms (2.90% GC)\n  maximum time:     10.980 ms (13.07% GC)\n  --------------\n  samples:          612\n  evals/sample:     1println(\"Non presorted timing:\")\n@benchmark groupby(@NT(avg_delay = mean∘dropna), flights, :Dest, select = :ArrDelay)Non presorted timing:\n\nBenchmarkTools.Trial:\n  memory estimate:  7.44 MiB\n  allocs estimate:  2353\n  --------------\n  minimum time:     112.555 ms (0.00% GC)\n  median time:      114.339 ms (0.00% GC)\n  mean time:        115.784 ms (0.33% GC)\n  maximum time:     130.845 ms (0.00% GC)\n  --------------\n  samples:          44\n  evals/sample:     1Using summarize, we can summarize several columns at the same time:summarize(mean∘dropna, flights, :Dest, select = (:Cancelled, :Diverted))\n\n# For each carrier, calculate the minimum and maximum arrival and departure delays:\n\ncols = Tuple(find(i -> contains(string(i), \"Delay\"), colnames(flights)))\nsummarize(@NT(min = minimum∘dropna, max = maximum∘dropna), flights, :UniqueCarrier, select = cols)Table with 15 rows, 5 columns:\nUniqueCarrier  ArrDelay_min  DepDelay_min  ArrDelay_max  DepDelay_max\n─────────────────────────────────────────────────────────────────────\n\"AA\"           -39           -15           978           970\n\"AS\"           -43           -15           183           172\n\"B6\"           -44           -14           335           310\n\"CO\"           -55           -18           957           981\n\"DL\"           -32           -17           701           730\n\"EV\"           -40           -18           469           479\n\"F9\"           -24           -15           277           275\n\"FL\"           -30           -14           500           507\n\"MQ\"           -38           -23           918           931\n\"OO\"           -57           -33           380           360\n\"UA\"           -47           -11           861           869\n\"US\"           -42           -17           433           425\n\"WN\"           -44           -10           499           548\n\"XE\"           -70           -19           634           628\n\"YV\"           -32           -11           72            54For each day of the year, count the total number of flights and sort in descending order:Lazy.@as x flights begin\n    groupby(length, x, :DayofMonth)\n    sort(x, :length, rev = true)\nendTable with 31 rows, 2 columns:\nDayofMonth  length\n──────────────────\n28          7777\n27          7717\n21          7698\n14          7694\n7           7621\n18          7613\n6           7606\n20          7599\n11          7578\n13          7546\n10          7541\n17          7537\n⋮\n25          7406\n16          7389\n8           7366\n12          7301\n4           7297\n19          7295\n24          7234\n5           7223\n30          6728\n29          6697\n31          4339For each destination, count the total number of flights and the number of distinct planes that flew theregroupby(@NT(flight_count = length, plane_count = length∘union), flights, :Dest, select = :TailNum)Table with 116 rows, 3 columns:\nDest   flight_count  plane_count\n────────────────────────────────\n\"ABQ\"  2812          716\n\"AEX\"  724           215\n\"AGS\"  1             1\n\"AMA\"  1297          158\n\"ANC\"  125           38\n\"ASE\"  125           60\n\"ATL\"  7886          983\n\"AUS\"  5022          1015\n\"AVL\"  350           142\n\"BFL\"  504           70\n\"BHM\"  2736          616\n\"BKG\"  110           63\n⋮\n\"SJU\"  391           115\n\"SLC\"  2033          368\n\"SMF\"  1014          184\n\"SNA\"  1661          67\n\"STL\"  2509          788\n\"TPA\"  3085          697\n\"TUL\"  2924          771\n\"TUS\"  1565          226\n\"TYS\"  1210          227\n\"VPS\"  880           224\n\"XNA\"  1172          177"
+},
+
+{
+    "location": "manual/tutorial.html#Window-functions-1",
+    "page": "Tutorial",
+    "title": "Window functions",
+    "category": "section",
+    "text": "In the previous section, we always applied functions that reduced a table or vector to a single value. Window functions instead take a vector and return a vector of the same length, and can also be used to manipulate data. For example we can rank, within each UniqueCarrier, how much delay a given flight had and figure out the day and month with the two greatest delays:using StatsBase\nfc = filter(t->!isnull(t.DepDelay), flights)\ngfc = groupby(fc, :UniqueCarrier, select = (:Month, :DayofMonth, :DepDelay), flatten = true) do dd\n    rks = ordinalrank(column(dd, :DepDelay), rev = true)\n    sort(dd[rks .<= 2], by =  i -> i.DepDelay, rev = true)\nendTable with 30 rows, 4 columns:\nUniqueCarrier  Month  DayofMonth  DepDelay\n──────────────────────────────────────────\n\"AA\"           12     12          970\n\"AA\"           11     19          677\n\"AS\"           2      28          172\n\"AS\"           7      6           138\n\"B6\"           10     29          310\n\"B6\"           8      19          283\n\"CO\"           8      1           981\n\"CO\"           1      20          780\n\"DL\"           10     25          730\n\"DL\"           4      5           497\n\"EV\"           6      25          479\n\"EV\"           1      5           465\n⋮\n\"OO\"           4      4           343\n\"UA\"           6      21          869\n\"UA\"           9      18          588\n\"US\"           4      19          425\n\"US\"           8      26          277\n\"WN\"           4      8           548\n\"WN\"           9      29          503\n\"XE\"           12     29          628\n\"XE\"           12     29          511\n\"YV\"           4      22          54\n\"YV\"           4      30          46Though in this case, it would have been simpler to use Julia partial sorting:groupby(fc, :UniqueCarrier, select = (:Month, :DayofMonth, :DepDelay), flatten = true) do dd\n    select(dd, 1:2, by = i -> i.DepDelay, rev = true)\nendTable with 30 rows, 4 columns:\nUniqueCarrier  Month  DayofMonth  DepDelay\n──────────────────────────────────────────\n\"AA\"           12     12          970\n\"AA\"           11     19          677\n\"AS\"           2      28          172\n\"AS\"           7      6           138\n\"B6\"           10     29          310\n\"B6\"           8      19          283\n\"CO\"           8      1           981\n\"CO\"           1      20          780\n\"DL\"           10     25          730\n\"DL\"           4      5           497\n\"EV\"           6      25          479\n\"EV\"           1      5           465\n⋮\n\"OO\"           4      4           343\n\"UA\"           6      21          869\n\"UA\"           9      18          588\n\"US\"           4      19          425\n\"US\"           8      26          277\n\"WN\"           4      8           548\n\"WN\"           9      29          503\n\"XE\"           12     29          628\n\"XE\"           12     29          511\n\"YV\"           4      22          54\n\"YV\"           4      30          46For each month, calculate the number of flights and the change from the previous monthusing ShiftedArrays\ny = groupby(length, flights, :Month)\nlengths = columns(y, :length)\npushcol(y, :change, lengths .- lag(lengths))Table with 12 rows, 3 columns:\nMonth  length  change\n─────────────────────\n1      18910   missing\n2      17128   -1782\n3      19470   2342\n4      18593   -877\n5      19172   579\n6      19600   428\n7      20548   948\n8      20176   -372\n9      18065   -2111\n10     18696   631\n11     18021   -675\n12     19117   1096"
+},
+
+{
+    "location": "manual/tutorial.html#Warning-1",
+    "page": "Tutorial",
+    "title": "Warning",
+    "category": "section",
+    "text": "missing (the official Julia way of representing missing data) has not yet been adopted by JuliaDB, so using ShiftedArrays in combination with JuliaDB may be slightly troublesome in Julia 0.6. The situation should be solved in Julia 0.7, where the adoption of missing should become more widespread. You can use a different default value with ShiftedArrays. For example, with an Array of Float64 you could do:v = [1.2, 2.3, 3.4]\nlag(v, default = NaN)3-element ShiftedArrays.ShiftedArray{Float64,Float64,1,Array{Float64,1}}:\n NaN  \n   1.2\n   2.3"
+},
+
+{
+    "location": "manual/tutorial.html#Visualizing-your-data-1",
+    "page": "Tutorial",
+    "title": "Visualizing your data",
+    "category": "section",
+    "text": "The StatPlots and GroupedErrors package as well as native plotting recipes from JuliaDB using OnlineStats make a rich set of visualizations possible with an intuitive syntax.Use the @df macro to be able to refer to columns simply by their name. You can work with these symobls as if they are regular vectors. Here for example, we split data according to whether the distance is smaller or bigger than 1000.using StatPlots\ngr(fmt = :png) # choose the fast GR backend and set format to png: svg would probably crash with so many points\n@df flights scatter(:DepDelay, :ArrDelay, group = :Distance .> 1000,  fmt = :png, layout = 2, legend = :topleft)(Image: scatterflights)"
+},
+
+{
+    "location": "manual/tutorial.html#Online-statistics-1",
+    "page": "Tutorial",
+    "title": "Online statistics",
+    "category": "section",
+    "text": "For large datasets, summary statistics can be computed using efficient online algorithms implemnted in OnlineStats. Here we will use an online algorithm to compute the mean traveled distance split across month of the year.using OnlineStats\ngroupreduce(Mean(), flights, :Month; select = :Distance)Table with 12 rows, 2 columns:\nMonth  Mean\n────────────────────────────────────\n1      Mean: n=18910 | value=760.804\n2      Mean: n=17128 | value=763.909\n3      Mean: n=19470 | value=782.788\n4      Mean: n=18593 | value=783.845\n5      Mean: n=19172 | value=789.66\n6      Mean: n=19600 | value=797.869\n7      Mean: n=20548 | value=798.52\n8      Mean: n=20176 | value=793.727\n9      Mean: n=18065 | value=790.444\n10     Mean: n=18696 | value=788.256\n11     Mean: n=18021 | value=790.691\n12     Mean: n=19117 | value=809.024"
+},
+
+{
+    "location": "manual/tutorial.html#Interfacing-with-online-datasets-1",
+    "page": "Tutorial",
+    "title": "Interfacing with online datasets",
+    "category": "section",
+    "text": "JuliaDB can also smoothly interface online datasets using packages from the JuliaDatabases organization. Here\'s how it would work with a MySQL dataset:using MySQL, JuliaDBconn = MySQL.connect(host::String, user::String, passwd::String; db::String = \"\") # edit as needed for your dataset\nMySQL.query(conn, \"SELECT Name, Salary FROM Employee;\") |> table # execute the query and collect as a table\nMySQL.disconnect(conn)"
 },
 
 ]}
