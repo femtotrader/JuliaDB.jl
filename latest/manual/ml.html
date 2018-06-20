@@ -6,7 +6,7 @@ download(&quot;https://raw.githubusercontent.com/agconti/&quot;*
 
 train_table = loadtable(&quot;train.csv&quot;, escapechar=&#39;&quot;&#39;)</code></pre><pre><code class="language-none">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  3 60302    3  1920    0     0  29873      0  0:00:02 --:--:--  0:00:02 29538100 60302  100 60302    0     0   900k      0 --:--:-- --:--:-- --:--:--  892k
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 60302  100 60302    0     0  3849k      0 --:--:-- --:--:-- --:--:-- 3925k
 Table with 891 rows, 9 columns:
 PassengerId  Survived  Pclass  Sex       Age   SibSp  Parch  Fare     Embarked
 ──────────────────────────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ PassengerId  Survived  Pclass  Sex       Age   SibSp  Parch  Fare     Embarked
 890          1         1       &quot;male&quot;    26.0  0      0      30.0     &quot;C&quot;
 891          0         3       &quot;male&quot;    32.0  0      0      7.75     &quot;Q&quot;</code></pre></div><h2><a class="nav-anchor" id="ML.schema-1" href="#ML.schema-1">ML.schema</a></h2><p>Schema is a programmatic description of the data in each column. It is a dictionary which maps each column (by name) to its schema type (mainly <code>Continuous</code>, and <code>Categorical</code>).</p><ul><li><p><code>ML.Continuous</code>: data is drawn from the real number line (e.g. Age)</p></li><li><p><code>ML.Categorical</code>: data is drawn from a fixed set of values (e.g. Sex)</p></li></ul><p><code>ML.schema(train_table)</code> will go through the data and infer the types and distribution of data. Let&#39;s try it without any arguments on the titanic dataset:</p><div><pre><code class="language-julia">ML.schema(train_table)</code></pre><pre><code class="language-none">Dict{Symbol,Any} with 12 entries:
   :SibSp       =&gt; Continous(μ=0.5230078563411893, σ=1.1027434322934322)
-  :Embarked    =&gt; Categorical(String[&quot;S&quot;, &quot;C&quot;, &quot;Q&quot;, &quot;&quot;])
+  :Embarked    =&gt; nothing
   :PassengerId =&gt; Continous(μ=446.0, σ=257.3538420152301)
   :Cabin       =&gt; nothing
   :Age         =&gt; JuliaDB.ML.Maybe{JuliaDB.ML.Continuous}(Continous(μ=29.699117…
@@ -37,7 +37,7 @@ PassengerId  Survived  Pclass  Sex       Age   SibSp  Parch  Fare     Embarked
   :Parch       =&gt; Continous(μ=0.3815937149270483, σ=0.8060572211299485)
   :Pclass      =&gt; Continous(μ=2.3086419753086447, σ=0.8360712409770491)
   :Ticket      =&gt; nothing
-  :Sex         =&gt; Categorical(String[&quot;male&quot;, &quot;female&quot;])
+  :Sex         =&gt; nothing
   :Name        =&gt; nothing
   :Fare        =&gt; Continous(μ=32.20420796857465, σ=49.693428597180855)</code></pre></div><p>Here is how the schema was inferred:</p><ul><li><p>Numeric fields were inferred to be <code>Continuous</code>, their mean and standard deviations were computed. This will later be used in normalizing the column in the feature matrix using the formula <code>((value - mean) / standard_deviation)</code>. This will bring all columns to the same &quot;scale&quot; making the training more effective.</p></li><li><p>Some string columns are inferred to be <code>Categorical</code> (e.g. Sex, Embarked) - this means that the column is a <a href="https://github.com/JuliaComputing/PooledArrays.jl">PooledArray</a>, and is drawn from a small &quot;pool&quot; of values. For example Sex is either &quot;male&quot; or &quot;female&quot;; Embarked is one of &quot;Q&quot;, &quot;S&quot;, &quot;C&quot; or &quot;&quot;</p></li><li><p>Some string columns (e.g. Name) get the schema <code>nothing</code> – such columns usually contain unique identifying data, so are not useful in machine learning.</p></li><li><p>The age column was inferred as <code>Maybe{Continuous}</code> – this means that there are missing values in the column. The mean and standard deviation computed are for the non-missing values.</p></li></ul><p>You may note that <code>Survived</code> column contains only 1s and 0s to denote whether a passenger survived the disaster or not. However, our schema inferred the column to be <code>Continuous</code>. To not be overly presumptive <code>ML.schema</code> will assume all numeric columns are continuous by default. We can give the hint that the Survived column is categorical by passing the <code>hints</code> arguemnt as a dictionary of column name to schema type. Further, we will also treat <code>Pclass</code> (passenger class) as categorical and suppress <code>Parch</code> and <code>SibSp</code> fields.</p><div><pre><code class="language-julia">sch = ML.schema(train_table, hints=Dict(
         :Pclass =&gt; ML.Categorical,
@@ -48,7 +48,7 @@ PassengerId  Survived  Pclass  Sex       Age   SibSp  Parch  Fare     Embarked
         )
 )</code></pre><pre><code class="language-none">Dict{Symbol,Any} with 12 entries:
   :SibSp       =&gt; nothing
-  :Embarked    =&gt; Categorical(String[&quot;S&quot;, &quot;C&quot;, &quot;Q&quot;, &quot;&quot;])
+  :Embarked    =&gt; nothing
   :PassengerId =&gt; Continous(μ=446.0, σ=257.3538420152301)
   :Cabin       =&gt; nothing
   :Age         =&gt; JuliaDB.ML.Maybe{JuliaDB.ML.Continuous}(Continous(μ=29.699117…
@@ -56,21 +56,15 @@ PassengerId  Survived  Pclass  Sex       Age   SibSp  Parch  Fare     Embarked
   :Parch       =&gt; nothing
   :Pclass      =&gt; Categorical([3, 1, 2])
   :Ticket      =&gt; nothing
-  :Sex         =&gt; Categorical(String[&quot;male&quot;, &quot;female&quot;])
+  :Sex         =&gt; nothing
   :Name        =&gt; nothing
-  :Fare        =&gt; nothing</code></pre></div><h2><a class="nav-anchor" id="Split-schema-into-input-and-output-1" href="#Split-schema-into-input-and-output-1">Split schema into input and output</a></h2><p>In a machine learning model, a subset of fields act as the input to the model, and one or more fields act as the output (predicted variables). For example, in the titanic dataset, you may want to predict whether a person will survive or not. So &quot;Survived&quot; field will be the output column. Using the <code>ML.splitschema</code> function, you can split the schema into input and output schema.</p><div><pre><code class="language-julia">input_sch, output_sch = ML.splitschema(sch, :Survived)</code></pre><pre><code class="language-none">(Dict{Symbol,Any}(Pair{Symbol,Any}(:SibSp, nothing),Pair{Symbol,Any}(:Embarked, Categorical(String[&quot;S&quot;, &quot;C&quot;, &quot;Q&quot;, &quot;&quot;])),Pair{Symbol,Any}(:PassengerId, Continous(μ=446.0, σ=257.3538420152301)),Pair{Symbol,Any}(:Cabin, nothing),Pair{Symbol,Any}(:Age, JuliaDB.ML.Maybe{JuliaDB.ML.Continuous}(Continous(μ=29.69911764705884, σ=14.526497332334051))),Pair{Symbol,Any}(:Parch, nothing),Pair{Symbol,Any}(:Pclass, Categorical([3, 1, 2])),Pair{Symbol,Any}(:Ticket, nothing),Pair{Symbol,Any}(:Sex, Categorical(String[&quot;male&quot;, &quot;female&quot;])),Pair{Symbol,Any}(:Name, nothing)…), Dict{Symbol,Any}(Pair{Symbol,Any}(:Survived, Categorical([0, 1]))))</code></pre></div><h2><a class="nav-anchor" id="Extracting-feature-matrix-1" href="#Extracting-feature-matrix-1">Extracting feature matrix</a></h2><p>Once the schema has been created, you can extract the feature matrix according to the given schema using <code>ML.featuremat</code>:</p><div><pre><code class="language-julia">train_input = ML.featuremat(input_sch, train_table)</code></pre><pre><code class="language-none">12×891 Array{Float32,2}:
-  1.0        0.0       1.0        1.0       …  1.0       0.0       0.0
-  0.0        1.0       0.0        0.0          0.0       1.0       0.0
-  0.0        0.0       0.0        0.0          0.0       0.0       1.0
-  0.0        0.0       0.0        0.0          0.0       0.0       0.0
- -1.72914   -1.72525  -1.72137   -1.71748      1.72137   1.72525   1.72914
-  0.0        0.0       0.0        0.0       …  1.0       0.0       0.0
+  :Fare        =&gt; nothing</code></pre></div><h2><a class="nav-anchor" id="Split-schema-into-input-and-output-1" href="#Split-schema-into-input-and-output-1">Split schema into input and output</a></h2><p>In a machine learning model, a subset of fields act as the input to the model, and one or more fields act as the output (predicted variables). For example, in the titanic dataset, you may want to predict whether a person will survive or not. So &quot;Survived&quot; field will be the output column. Using the <code>ML.splitschema</code> function, you can split the schema into input and output schema.</p><div><pre><code class="language-julia">input_sch, output_sch = ML.splitschema(sch, :Survived)</code></pre><pre><code class="language-none">(Dict{Symbol,Any}(Pair{Symbol,Any}(:SibSp, nothing),Pair{Symbol,Any}(:Embarked, nothing),Pair{Symbol,Any}(:PassengerId, Continous(μ=446.0, σ=257.3538420152301)),Pair{Symbol,Any}(:Cabin, nothing),Pair{Symbol,Any}(:Age, JuliaDB.ML.Maybe{JuliaDB.ML.Continuous}(Continous(μ=29.69911764705884, σ=14.526497332334051))),Pair{Symbol,Any}(:Parch, nothing),Pair{Symbol,Any}(:Pclass, Categorical([3, 1, 2])),Pair{Symbol,Any}(:Ticket, nothing),Pair{Symbol,Any}(:Sex, nothing),Pair{Symbol,Any}(:Name, nothing)…), Dict{Symbol,Any}(Pair{Symbol,Any}(:Survived, Categorical([0, 1]))))</code></pre></div><h2><a class="nav-anchor" id="Extracting-feature-matrix-1" href="#Extracting-feature-matrix-1">Extracting feature matrix</a></h2><p>Once the schema has been created, you can extract the feature matrix according to the given schema using <code>ML.featuremat</code>:</p><div><pre><code class="language-julia">train_input = ML.featuremat(input_sch, train_table)</code></pre><pre><code class="language-none">6×891 Array{Float32,2}:
+ -1.72914   -1.72525  -1.72137   -1.71748   …  1.72137   1.72525   1.72914
+  0.0        0.0       0.0        0.0          1.0       0.0       0.0
  -0.530005   0.57143  -0.254646   0.364911     0.0      -0.254646  0.158392
   1.0        0.0       1.0        0.0          1.0       0.0       1.0
   0.0        1.0       0.0        1.0          0.0       1.0       0.0
-  0.0        0.0       0.0        0.0          0.0       0.0       0.0
-  1.0        0.0       0.0        0.0       …  0.0       1.0       1.0
-  0.0        1.0       1.0        1.0          1.0       0.0       0.0</code></pre></div><div><pre><code class="language-julia">train_output = ML.featuremat(output_sch, train_table)</code></pre><pre><code class="language-none">2×891 Array{Float32,2}:
+  0.0        0.0       0.0        0.0       …  0.0       0.0       0.0</code></pre></div><div><pre><code class="language-julia">train_output = ML.featuremat(output_sch, train_table)</code></pre><pre><code class="language-none">2×891 Array{Float32,2}:
  1.0  0.0  0.0  0.0  1.0  1.0  1.0  1.0  …  1.0  1.0  1.0  0.0  1.0  0.0  1.0
  0.0  1.0  1.0  1.0  0.0  0.0  0.0  0.0     0.0  0.0  0.0  1.0  0.0  1.0  0.0</code></pre></div><h2><a class="nav-anchor" id="Learning-1" href="#Learning-1">Learning</a></h2><p>Let us create a simple neural network to learn whether a passenger will survive or not using the <a href="https://fluxml.github.io/">Flux</a> framework.</p><p><code>ML.width(schema)</code> will give the number of features in the <code>schema</code> we will use this in specifying the model size:</p><pre><code class="language-">using Flux
 
@@ -91,4 +85,4 @@ test_table = loadtable(&quot;test.csv&quot;, escapechar=&#39;&quot;&#39;)
 
 test_input = ML.featuremat(input_sch, test_table) ;</code></pre><pre><code class="language-none">  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 28210  100 28210    0     0   484k      0 --:--:-- --:--:-- --:--:--  491k</code></pre></div><p>Run the model on one observation:</p><pre><code class="language-">model(test_input[:, 1])</code></pre><p>The output has two numbers which add up to 1: the probability of not surviving vs that of surviving. It seems, according to our model, that this person is unlikely to survive on the titanic.</p><p>You can also run the model on all observations by simply passing the whole feature matrix to <code>model</code>.</p><pre><code class="language-">model(test_input)</code></pre><footer><hr/><a class="previous" href="out-of-core.html"><span class="direction">Previous</span><span class="title">Out-of-core functionality</span></a><a class="next" href="tutorial.html"><span class="direction">Next</span><span class="title">Tutorial</span></a></footer></article></body></html>
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 28210  100 28210    0     0  1993k      0 --:--:-- --:--:-- --:--:-- 2119k</code></pre></div><p>Run the model on one observation:</p><pre><code class="language-">model(test_input[:, 1])</code></pre><p>The output has two numbers which add up to 1: the probability of not surviving vs that of surviving. It seems, according to our model, that this person is unlikely to survive on the titanic.</p><p>You can also run the model on all observations by simply passing the whole feature matrix to <code>model</code>.</p><pre><code class="language-">model(test_input)</code></pre><footer><hr/><a class="previous" href="out-of-core.html"><span class="direction">Previous</span><span class="title">Out-of-core functionality</span></a><a class="next" href="tutorial.html"><span class="direction">Next</span><span class="title">Tutorial</span></a></footer></article></body></html>
