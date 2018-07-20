@@ -3,6 +3,9 @@ module JuliaDB
 
 using IndexedTables, Dagger, NamedTuples, OnlineStats
 
+import Observables, Widgets
+using Widgets: @nodeps, @widget, @layout!, @output!, div
+
 import Base: collect, select, join
 import IndexedTables: NextTable, table, NDSparse, ndsparse, Tup, groupjoin
 import TextParse: csvread
@@ -50,6 +53,7 @@ include("join.jl")
 
 include("diagnostics.jl")
 include("recipes.jl")
+include("interactiverecipes.jl")
 include("ml.jl")
 
 end # module

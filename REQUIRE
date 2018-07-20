@@ -10,3 +10,5 @@ PooledArrays 0.2.1
 WeakRefStrings
 StatsBase
 DataValues
+Widgets 0.2.2
+Observables 0.1.2
