@@ -4,7 +4,7 @@ module JuliaDB
 using IndexedTables, Dagger, NamedTuples, OnlineStats
 
 import Observables, Widgets
-using Widgets: @nodeps, @widget, @layout!, @output!, div
+using Widgets: @nodeps, @widget, @layout!, @output!
 
 import Base: collect, select, join
 import IndexedTables: NextTable, table, NDSparse, ndsparse, Tup, groupjoin
