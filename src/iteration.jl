@@ -133,36 +133,38 @@ function Base.getindex(d::ColDict{<:DArray})
 end
 
 function columns(t::Union{DDataset, DArray})
-    cs = delayedmap(t.chunks) do c
-        x = columns(c)
-        if isa(x, AbstractArray)
-            tochunk(x)
-        elseif isa(x, Tup)
-            map(tochunk, IndexedTables.astuple(x))
-        else
-            # this should never happen
-            error("Columns $which could not be extracted")
+    GC.@preserve t begin
+        cs = delayedmap(t.chunks) do c
+            x = columns(c)
+            if isa(x, AbstractArray)
+                tochunk(x)
+            elseif isa(x, Tup)
+                map(tochunk, IndexedTables.astuple(x))
+            else
+                # this should never happen
+                error("Columns $which could not be extracted")
+            end
         end
-    end
-    tuples = collect(get_context(), treereduce(delayed(vcat), cs))
-    if length(cs) == 1
-        tuples = [tuples]
-    end
+        tuples = collect(get_context(), treereduce(delayed(vcat), cs))
+        if length(cs) == 1
+            tuples = [tuples]
+        end
 
-    if isa(tuples[1], Tup)
-        arrays = map((xs...)->fromchunks([xs...]), tuples...)
-        if t isa DDataset
-            names = colnames(t)
+        if isa(tuples[1], Tup)
+            arrays = map((xs...)->fromchunks([xs...]), tuples...)
+            if t isa DDataset
+                names = colnames(t)
+            else
+                names = fieldnames(eltype(t))
+            end
+            if all(x -> x isa Symbol, names)
+                IndexedTables.namedtuple(names...)(arrays)
+            else
+                arrays
+            end
         else
-            names = fieldnames(eltype(t))
+            fromchunks(tuples)
         end
-        if all(x -> x isa Symbol, names)
-            IndexedTables.namedtuple(names...)(arrays)
-        else
-            arrays
-        end
-    else
-        fromchunks(tuples)
     end
 end
 
