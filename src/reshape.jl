@@ -23,7 +23,9 @@ function unstack(t::D, by = pkeynames(t); variable = :variable, value = :value) 
     tgrp = groupby((value => identity,), t, by, select = (variable, value))
     S = eltype(colnames(t))
     col = column(t, variable)
-    cols = S.(collect(Dagger.treereduce(delayed(union), delayedmap(unique, col.chunks))))
+    GC.@preserve begin
+        cols = S.(collect(Dagger.treereduce(delayed(union), delayedmap(unique, col.chunks))))
+    end
     T = eltype(columns(t, value))
     unstack(D, T isa Type{<:DataValue} ? eltype(T) : T, pkeys(tgrp), columns(tgrp, value), cols)
 end

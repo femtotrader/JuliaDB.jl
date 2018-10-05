@@ -184,9 +184,11 @@ function dist_selector(t, f, which::Tup)
         end
         # this repeats the non-chunks to all other chunks,
         # then queries with the corresponding chunks
-        broadcast(t1.chunks, w1...) do x...
-            delayed((inp...)->f(inp[1], inp[2:end]))(x...)
-        end |> fromchunks
+        GC.@preserve t1 begin
+            return broadcast(t1.chunks, w1...) do x...
+                delayed((inp...)->f(inp[1], inp[2:end]))(x...)
+            end |> fromchunks
+        end
     else
         extractarray(t, x->f(x, which))
     end

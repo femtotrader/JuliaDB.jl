@@ -62,33 +62,35 @@ function ndsparse(::Val{:distributed}, ks::Tup,
     end
     kdarrays = map(x->distribute(x, chunks), ks)
     vdarrays = isa(vs, Tup) ? map(x->distribute(x, chunks), vs) : distribute(vs, chunks)
+    GC.@preserve kdarrays vdarrays begin
 
-    if isempty(kdarrays)
-        error("NDSparse must be constructed with at least one index column")
+        if isempty(kdarrays)
+            error("NDSparse must be constructed with at least one index column")
+        end
+
+        nchunks = length(kdarrays[1].chunks)
+        inames = isa(ks, NamedTuple) ? keys(ks) : nothing
+        ndims = length(ks)
+        dnames = isa(vs, NamedTuple) ? keys(vs) : nothing
+        iscols = isa(vs, Tup)
+
+        function makechunk(args...)
+            k = Columns(args[1:ndims]..., names=inames)
+            v = iscols ? Columns(args[ndims+1:end]..., names=dnames) : args[end]
+            ndsparse(k,v; agg=agg, kwargs...)
+        end
+
+        cs = Array{Any}(undef, nchunks)
+        for i = 1:nchunks
+            args = Any[map(x->x.chunks[i], kdarrays)...]
+            append!(args, isa(vs, Tup) ? [map(x->x.chunks[i], vdarrays)...] :
+                    [vdarrays.chunks[i]])
+            cs[i] = delayed(makechunk)(args...)
+        end
+        fromchunks(cs, closed=closed,
+                   merge=(x,y)->merge(x,y, agg=agg),
+                   allowoverlap=allowoverlap)
     end
-
-    nchunks = length(kdarrays[1].chunks)
-    inames = isa(ks, NamedTuple) ? keys(ks) : nothing
-    ndims = length(ks)
-    dnames = isa(vs, NamedTuple) ? keys(vs) : nothing
-    iscols = isa(vs, Tup)
-
-    function makechunk(args...)
-        k = Columns(args[1:ndims]..., names=inames)
-        v = iscols ? Columns(args[ndims+1:end]..., names=dnames) : args[end]
-        ndsparse(k,v; agg=agg, kwargs...)
-    end
-
-    cs = Array{Any}(undef, nchunks)
-    for i = 1:nchunks
-        args = Any[map(x->x.chunks[i], kdarrays)...]
-        append!(args, isa(vs, Tup) ? [map(x->x.chunks[i], vdarrays)...] :
-                [vdarrays.chunks[i]])
-        cs[i] = delayed(makechunk)(args...)
-    end
-    fromchunks(cs, closed=closed,
-               merge=(x,y)->merge(x,y, agg=agg),
-               allowoverlap=allowoverlap)
 end
 
 function ndsparse(x::Dagger.DArray{<:Tup}, y; kwargs...)

@@ -170,16 +170,18 @@ featuremat(t) = featuremat(schema(t), t)
 
 function featuremat(s, t::DDataset)
     t = compute(t)
-    w = width(s)
-    h = length(t)
-    lengths = get.(nrows.(t.domains))
-    domains = Dagger.DomainBlocks((1,1), ([w], cumsum(lengths)))
+    GC.@preserve t begin
+        w = width(s)
+        h = length(t)
+        lengths = get.(nrows.(t.domains))
+        domains = Dagger.DomainBlocks((1,1), ([w], cumsum(lengths)))
 
-    DArray(Float32,
-           Dagger.ArrayDomain(w, sum(lengths)),
-           domains,
-           reshape(delayedmap(x->featuremat(s,x), t.chunks),
-                   (1, length(t.chunks))))
+        DArray(Float32,
+               Dagger.ArrayDomain(w, sum(lengths)),
+               domains,
+               reshape(delayedmap(x->featuremat(s,x), t.chunks),
+                       (1, length(t.chunks))))
+    end
 end
 
 end

@@ -88,19 +88,21 @@ function table(::Val{:distributed}, tup::Tup; chunks=nothing, kwargs...)
     end
 
     darrays = map(x->distribute(x, chunks), tup)
+    GC.@preserve darrays begin
 
-    if isempty(darrays)
-        error("Table must be constructed with at least one column")
-    end
+        if isempty(darrays)
+            error("Table must be constructed with at least one column")
+        end
 
-    nchunks = length(darrays[1].chunks)
-    cs = Array{Any}(undef, nchunks)
-    names = isa(tup, NamedTuple) ? [keys(tup)...] : nothing
-    f = delayed((cs...) -> table(cs...; names=names, kwargs...))
-    for i = 1:nchunks
-        cs[i] = f(map(x->x.chunks[i], darrays)...)
+        nchunks = length(darrays[1].chunks)
+        cs = Array{Any}(undef, nchunks)
+        names = isa(tup, NamedTuple) ? [keys(tup)...] : nothing
+        f = delayed((cs...) -> table(cs...; names=names, kwargs...))
+        for i = 1:nchunks
+            cs[i] = f(map(x->x.chunks[i], darrays)...)
+        end
+        fromchunks(cs)
     end
-    fromchunks(cs)
 end
 
 # Copying constructor
