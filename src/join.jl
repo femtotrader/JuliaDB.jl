@@ -39,6 +39,7 @@ function Base.join(f, left::DDataset, right::DDataset;
                    kwargs...)
     cl = compute(left)
     cr = compute(right)
+    GC.@preserve cl cr begin
 
     if broadcast === :left
         error("only broadcast = :right is supported at the moment")
@@ -68,6 +69,8 @@ function Base.join(f, left::DDataset, right::DDataset;
 
     i = 1
     j = 1
+
+    GC.@preserve r l begin
 
     cs = []
     rempty = delayed(empty!∘copy)(r.chunks[end])
@@ -120,7 +123,8 @@ function Base.join(f, left::DDataset, right::DDataset;
         push!(cs, delayed(joinchunks)(lempty, r.chunks[j]))
         j += 1
     end
-
+    end
+    end
     fromchunks(cs)
 end
 
@@ -286,7 +290,9 @@ end
 
 function merge(left::DNextTable, right::DNextTable; chunks=nworkers())
     l, r = rechunk_together(left, right, pkeynames(left), pkeynames(right); chunks=chunks)
-    fromchunks(delayedmap(merge, l.chunks, r.chunks))
+    GC.@preserve l r begin
+        return fromchunks(delayedmap(merge, l.chunks, r.chunks))
+    end
 end
 
 function subbox(i::Interval, idx)
